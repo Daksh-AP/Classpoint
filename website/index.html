@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ClassPoint - Smart Timetable Management</title>
-    <meta name="description" content="Professional desktop app for managing class schedules with manual entry and real-time notifications.">
+    <meta name="description" content="Professional desktop app for managing class schedules with OCR scanning, manual entry, and real-time notifications.">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -72,7 +72,7 @@
                     <span class="block text-indigo-200">Made Simple</span>
                 </h1>
                 <p class="text-xl md:text-2xl mb-8 text-indigo-100 max-w-3xl mx-auto">
-                    Professional desktop app with manual entry, real-time notifications, and desktop widget for effortless class scheduling.
+                    Professional desktop app with OCR scanning, manual entry, real-time notifications, and desktop widget for effortless class scheduling.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     <button onclick="downloadApp()" class="download-btn text-white px-8 py-4 rounded-lg text-lg font-semibold inline-flex items-center">
@@ -109,6 +109,18 @@
             </div>
 
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- OCR Scanning -->
+                <div class="feature-card bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">OCR Scanning</h3>
+                    <p class="text-gray-600">Upload timetable images and let AI extract your schedule automatically. Supports JPG, PNG formats with high accuracy.</p>
+                </div>
+
                 <!-- Manual Entry -->
                 <div class="feature-card bg-white p-8 rounded-xl shadow-lg border border-gray-100">
                     <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6">
@@ -334,9 +346,6 @@
                     <p class="text-gray-400 text-sm">
                         © 2024 ClassPoint. Made with ❤️ for better class management.
                     </p>
-                    <p class="text-gray-500 text-xs mt-2">
-                        Made by: Daksh A
-                    </p>
                 </div>
             </div>
         </div>
@@ -344,20 +353,21 @@
 
     <script>
         function downloadApp() {
-            // External download link (Vercel has 100MB limit, so host elsewhere)
-            const downloadUrl = 'https://drive.google.com/uc?export=download&id=1epKIcod60DAV2ZCzSSUxEAJkofBgEzSP';
-
-            // Trigger direct file download in same tab
-            window.location.href = downloadUrl;
-
+            // Direct download from Google Drive (Updated version with Quickdrop button)
+            const downloadUrl = 'https://drive.google.com/file/d/1rYCeWs4V2_WtoIWWodiEeLtOq5xzB33k/view?usp=drive_link';
+            
+            // Open Google Drive download link
+            window.open(downloadUrl, '_blank');
+            
             // Optional: Show a brief message
             setTimeout(() => {
                 alert('📥 Download Started!\n\n' +
-                      '✅ Classpoint.zip (~135MB)\n' +
+                      '✅ ClassPoint-Portable.zip (135MB)\n' +
                       '✅ Extract the zip file\n' +
                       '✅ Run ClassPoint.exe\n' +
-                      '✅ No installation required!');
-            }, 800);
+                      '✅ No installation required!\n' +
+                      '🆕 NEW: Quickdrop button included!');
+            }, 1000);
         }
 
         // Smooth scrolling for navigation links
