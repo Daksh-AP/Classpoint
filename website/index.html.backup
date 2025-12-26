@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClassPoint - Smart Timetable Management</title>
+    <meta name="description" content="Professional desktop app for managing class schedules with OCR scanning, manual entry, and real-time notifications.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+            'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+            sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); /* Light mode background */
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            color: #1a202c; /* Default text color for light mode */
+        }
+        .dark body {
+            background: linear-gradient(135deg, #082f49 0%, #0c4a6e 100%); /* Dark mode background */
+            color: #e2e8f0; /* Default text color for dark mode */
+        }
+        .glass-card {
+            backdrop-filter: blur(20px) saturate(180%);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+            animation: fade-in 0.5s ease-in-out;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
+        }
+        .dark .glass-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        }
+        .download-btn {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            transition: all 0.3s ease;
+        }
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(79, 70, 229, 0.4);
+        }
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="dark"> <!-- Apply dark class for testing dark mode, remove for system default -->
+    <!-- Navigation -->
+    <nav class="glass-card shadow-lg border-b border-white/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-default-text-light dark:text-default-text-dark">ClassPoint</h1>
+                    </div>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#features" class="text-default-text-light dark:text-default-text-dark hover:text-blue-500 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium">Features</a>
+                        <a href="#download" class="text-default-text-light dark:text-default-text-dark hover:text-blue-500 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium">Download</a>
+                        <a href="#support" class="text-default-text-light dark:text-default-text-dark hover:text-blue-500 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium">Support</a>
+                        <a href="https://quickdrop-drab.vercel.app/" target="_blank" class="bg-blue-500 text-white hover:bg-blue-600 px-4 py-2 rounded-md text-sm font-medium transition-colors inline-flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                            </svg>
+                            Quickdrop
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="text-default-text-light dark:text-default-text-dark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+            <div class="text-center">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6">
+                    Smart Timetable Management
+                    <span class="block text-blue-500 dark:text-indigo-200">Made Simple</span>
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 text-gray-700 dark:text-indigo-100 max-w-3xl mx-auto">
+                    Professional desktop app with OCR scanning, manual entry, real-time notifications, and desktop widget for effortless class scheduling.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="downloadApp('stable')" class="download-btn text-white px-8 py-4 rounded-lg text-lg font-semibold inline-flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-4-4m4 4l4-4m6 5a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Download Stable
+                    </button>
+                    <button onclick="downloadApp('beta')" class="download-btn text-white px-8 py-4 rounded-lg text-lg font-semibold inline-flex items-center bg-purple-600 hover:bg-purple-700">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-4-4m4 4l4-4m6 5a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Download Beta
+                    </button>
+                    <a href="#features" class="glass-card text-default-text-light dark:text-default-text-dark px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white/20 transition-all">
+                        Learn More
+                    </a>
+                    <a href="https://github.com/Windows-Concept/ClassPoint" target="_blank" class="glass-card text-default-text-light dark:text-default-text-dark px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white/20 transition-all inline-flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        GitHub Repo
+                    </a>
+                </div>
+                <p class="text-gray-700 dark:text-indigo-200 mt-4">Windows 10/11 • No Installation Required • 100% Free</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-default-text-light dark:text-default-text-dark mb-4">
+                    Everything You Need for Class Management
+                </h2>
+                <p class="text-xl text-gray-700 dark:text-gray-300 max-w-2xl mx-auto">
+                    Designed specifically for teachers who want professional, efficient timetable management.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- OCR Scanning -->
+                <div class="glass-card p-8">
+                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6 text-blue-500 dark:text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-default-text-light dark:text-default-text-dark mb-3">OCR Scanning</h3>
+                    <p class="text-gray-700 dark:text-gray-300">Upload timetable images and let AI extract your schedule automatically. Supports JPG, PNG formats with high accuracy.</p>
+                </div>
+
+                <!-- Manual Entry -->
+                <div class="glass-card p-8">
+                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6 text-green-500 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-default-text-light dark:text-default-text-dark mb-3">Manual Entry</h3>
+                    <p class="text-gray-700 dark:text-gray-300">Beautiful interface for creating schedules by hand with precise time controls and conflict detection.</p>
+                </div>
+
+                <!-- Real-time Tracking -->
+                <div class="glass-card p-8">
+                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6 text-purple-500 dark:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-default-text-light dark:text-default-text-dark mb-3">Real-time Tracking</h3>
+                    <p class="text-gray-700 dark:text-gray-300">Live current and next class display with countdown timers and progress indicators.</p>
+                </div>
+
+                <!-- Desktop Widget -->
+                <div class="glass-card p-8">
+                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6 text-blue-500 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-default-text-light dark:text-default-text-dark mb-3">Desktop Widget</h3>
+                    <p class="text-gray-700 dark:text-gray-300">Always-on-top floating widget for quick class reference without opening the main app.</p>
+                </div>
+
+                <!-- Smart Notifications -->
+                <div class="glass-card p-8">
+                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6 text-yellow-500 dark:text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM12 17.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-default-text-light dark:text-default-text-dark mb-3">Smart Notifications</h3>
+                    <p class="text-gray-700 dark:text-gray-300">Configurable class reminders with sound alerts and customizable advance warning times.</p>
+                </div>
+
+                <!-- Section Management -->
+                <div class="glass-card p-8">
+                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-6">
+                        <svg class="w-6 h-6 text-red-500 dark:text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-default-text-light dark:text-default-text-dark mb-3">Multi-Section Support</h3>
+                    <p class="text-gray-700 dark:text-gray-300">Manage multiple class sections (Super 1-3, Whiz 1-3) with easy switching and section-specific filtering.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots Section -->
+    <section class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-default-text-light dark:text-default-text-dark mb-4">
+                    Beautiful, Professional Interface
+                </h2>
+                <p class="text-xl text-gray-700 dark:text-gray-300">
+                    Designed with teachers in mind - clean, intuitive, and powerful.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="glass-card p-6">
+                    <div class="bg-white/20 h-64 rounded-lg mb-4 flex items-center justify-center">
+                        <div class="text-default-text-light dark:text-default-text-dark text-center">
+                            <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            <p class="text-lg font-semibold">Main Dashboard</p>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-semibold text-default-text-light dark:text-default-text-dark mb-2">Dashboard View</h3>
+                    <p class="text-gray-700 dark:text-gray-300">Clean overview of current and upcoming classes with real-time updates.</p>
+                </div>
+                
+                <div class="glass-card p-6">
+                    <div class="bg-white/20 h-64 rounded-lg mb-4 flex items-center justify-center">
+                        <div class="text-default-text-light dark:text-default-text-dark text-center">
+                            <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+                            </svg>
+                            <p class="text-lg font-semibold">Desktop Widget</p>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-semibold text-default-text-light dark:text-default-text-dark mb-2">Always-On Widget</h3>
+                    <p class="text-gray-700 dark:text-gray-300">Compact floating widget that stays on top for quick class reference.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section id="download" class="py-20">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-default-text-light dark:text-default-text-dark mb-6">
+                Ready to Get Started?
+            </h2>
+            <p class="text-xl text-gray-700 dark:text-gray-300 mb-8">
+                Download ClassPoint now and transform your class management experience.
+            </p>
+            
+            <div class="glass-card p-8 mb-8">
+                <div class="flex items-center justify-center mb-6">
+                    <div class="bg-white/20 p-4 rounded-full">
+                        <svg class="w-8 h-8 text-blue-500 dark:text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                        </svg>
+                    </div>
+                </div>
+                
+                <h3 class="text-2xl font-bold text-default-text-light dark:text-default-text-dark mb-4">ClassPoint Desktop App</h3>
+                <div class="flex flex-wrap justify-center gap-4 mb-6 text-sm text-gray-700 dark:text-gray-300">
+                    <span class="bg-gray-100 dark:bg-white/10 px-3 py-1 rounded-full">✅ Windows 10/11</span>
+                    <span class="bg-gray-100 dark:bg-white/10 px-3 py-1 rounded-full">✅ No Installation</span>
+                    <span class="bg-gray-100 dark:bg-white/10 px-3 py-1 rounded-full">✅ 100% Free</span>
+                    <span class="bg-gray-100 dark:bg-white/10 px-3 py-1 rounded-full">✅ 135 MB</span>
+                </div>
+                
+                <button onclick="downloadApp('stable')" class="download-btn text-white px-12 py-4 rounded-lg text-xl font-semibold inline-flex items-center mb-4">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-4-4m4 4l4-4m6 5a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Download Stable
+                </button>
+                <button onclick="downloadApp('beta')" class="download-btn text-white px-12 py-4 rounded-lg text-xl font-semibold inline-flex items-center mb-4 bg-purple-600 hover:bg-purple-700">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-4-4m4 4l4-4m6 5a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Download Beta
+                </button>
+                
+                <p class="text-sm text-gray-700 dark:text-gray-500">
+                    Download • Extract • Run ClassPoint.exe • That's it!
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6 text-left">
+                <div class="flex items-start">
+                    <div class="bg-white/20 p-2 rounded-lg mr-4">
+                        <svg class="w-5 h-5 text-green-500 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-default-text-light dark:text-default-text-dark mb-1">Portable</h4>
+                        <p class="text-sm text-gray-700 dark:text-gray-300">No installation required. Run from anywhere.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start">
+                    <div class="bg-white/20 p-2 rounded-lg mr-4">
+                        <svg class="w-5 h-5 text-blue-500 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-default-text-light dark:text-default-text-dark mb-1">Secure</h4>
+                        <p class="text-sm text-gray-700 dark:text-gray-300">All data stored locally. No cloud dependencies.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start">
+                    <div class="bg-white/20 p-2 rounded-lg mr-4">
+                        <svg class="w-5 h-5 text-purple-500 dark:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-default-text-light dark:text-default-text-dark mb-1">Fast</h4>
+                        <p class="text-sm text-gray-700 dark:text-gray-300">Native desktop performance. Instant startup.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Support Section -->
+    <section id="support" class="py-20">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl font-bold text-default-text-light dark:text-default-text-dark mb-8">Need Help?</h2>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="glass-card p-8">
+                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-blue-500 dark:text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-default-text-light dark:text-default-text-dark mb-3">Quick Start Guide</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">Step-by-step instructions to get you up and running in minutes.</p>
+                    <a href="quick-start.html" class="text-blue-500 dark:text-indigo-300 hover:text-blue-600 dark:hover:text-white font-medium">View Guide →</a>
+                </div>
+                
+                <div class="glass-card p-8">
+                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-green-500 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-default-text-light dark:text-default-text-dark mb-3">Contact Support</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">Have questions? We're here to help you succeed.</p>
+                    <a href="mailto:support@classpoint.app" class="text-green-500 dark:text-green-300 hover:text-green-600 dark:hover:text-white font-medium">Get Support →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="glass-card py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h3 class="text-2xl font-bold text-default-text-light dark:text-default-text-dark mb-4">ClassPoint</h3>
+                <p class="text-gray-700 dark:text-gray-400 mb-6">Smart Timetable Management Made Simple</p>
+                <div class="flex justify-center space-x-6 mb-8">
+                    <a href="#features" class="text-gray-700 dark:text-gray-400 hover:text-blue-500 dark:hover:text-white">Features</a>
+                    <a href="#download" class="text-gray-700 dark:text-gray-400 hover:text-blue-500 dark:hover:text-white">Download</a>
+                    <a href="#support" class="text-gray-700 dark:text-gray-400 hover:text-blue-500 dark:hover:text-white">Support</a>
+                </div>
+                <div class="border-t border-white/20 pt-8">
+                    <p class="text-gray-700 dark:text-gray-400 text-sm">
+                        © 2024 ClassPoint. Made with ❤️ for better class management.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function downloadApp(version) {
+            let downloadUrl;
+            let message;
+
+            if (version === 'beta') {
+                downloadUrl = 'https://drive.google.com/file/d/1YCRVmaP-OOe2A1jgEZe1PgaT3YiUjMVi/view?usp=sharing';
+                message = '📥 Beta Download Started!\n\n' +
+                          '✅ ClassPoint-Beta.zip (Size may vary)\n' +
+                          '✅ Extract the zip file\n' +
+                          '✅ Run ClassPoint.exe\n' +
+                          '✅ No installation required!\n' +
+                          '🧪 This is a beta version, expect potential bugs.';
+            } else { // Default to stable
+                downloadUrl = 'https://drive.google.com/file/d/1rYCeWs4V2_WtoIWWodiEeLtOq5xzB33k/view?usp=drive_link';
+                message = '📥 Stable Download Started!\n\n' +
+                          '✅ ClassPoint-Portable.zip (135MB)\n' +
+                          '✅ Extract the zip file\n' +
+                          '✅ Run ClassPoint.exe\n' +
+                          '✅ No installation required!\n' +
+                          '🆕 NEW: Quickdrop button included!';
+            }
+            
+            // Open Google Drive download link
+            window.open(downloadUrl, '_blank');
+            
+            // Optional: Show a brief message
+            setTimeout(() => {
+                alert(message);
+            }, 1000);
+        }
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>

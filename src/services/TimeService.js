@@ -34,6 +34,22 @@ export class TimeService {
     return upcomingClasses[0] || null;
   }
 
+  // Get all classes that are yet to happen today
+  static getRemainingClasses(schedule) {
+    const now = new Date();
+    const currentTime = this.formatTime(now);
+
+    const remaining = schedule.filter(classItem => 
+      this.timeToMinutes(classItem.startTime) > this.timeToMinutes(currentTime)
+    );
+
+    remaining.sort((a, b) => 
+      this.timeToMinutes(a.startTime) - this.timeToMinutes(b.startTime)
+    );
+
+    return remaining;
+  }
+
   // Check if current time is within a class period
   static isCurrentTime(startTime, endTime) {
     const now = new Date();

@@ -1,11 +1,10 @@
-const { app, BrowserWindow, ipcMain, screen } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-
-// Check if in development mode
+console.log('[MAIN] electron.cjs loaded');
 const isDev = process.env.NODE_ENV === 'development' || process.defaultApp || /[\\/]electron-prebuilt[\\/]/.test(process.execPath) || /[\\/]electron[\\/]/.test(process.execPath);
 
 let mainWindow;
-let widgetWindow;
+let overlayWindow;
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
@@ -14,9 +13,9 @@ function createMainWindow() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-      enableRemoteModule: true,
+      webSecurity: !isDev,
+      webviewTag: true,
     },
-    icon: path.join(__dirname, 'icon.png'),
     show: false,
   });
 
@@ -32,17 +31,22 @@ function createMainWindow() {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+    if (overlayWindow) {
+      overlayWindow.close();
+    }
   });
 }
 
-function createWidgetWindow() {
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-  
-  widgetWindow = new BrowserWindow({
-    width: 300,
-    height: 400,
-    x: width - 320,
-    y: 20,
+function createOverlayWindow() {
+  if (overlayWindow) {
+    overlayWindow.focus();
+    return;
+  }
+
+  overlayWindow = new BrowserWindow({
+    width: 1920,
+    height: 1080,
+    transparent: true,
     frame: false,
     alwaysOnTop: true,
     skipTaskbar: true,
@@ -51,25 +55,109 @@ function createWidgetWindow() {
       nodeIntegration: true,
       contextIsolation: false,
     },
-    transparent: true,
   });
 
-  widgetWindow.loadURL(
+  overlayWindow.setIgnoreMouseEvents(false);
+  overlayWindow.maximize();
+
+  overlayWindow.loadURL(
     isDev
-      ? 'http://localhost:3000?widget=true'
-      : `file://${path.join(__dirname, '../build/index.html')}?widget=true`
+      ? 'http://localhost:3000/#/overlay'
+      : `file://${path.join(__dirname, '../build/index.html')}#/overlay`
   );
 
-  widgetWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  
-  widgetWindow.on('closed', () => {
-    widgetWindow = null;
+  overlayWindow.on('closed', () => {
+    overlayWindow = null;
   });
 }
 
+// IPC Handlers
+ipcMain.on('open-overlay', () => {
+  createOverlayWindow();
+});
+
+ipcMain.on('close-overlay', () => {
+  if (overlayWindow) {
+    overlayWindow.close();
+    overlayWindow = null;
+  }
+});
+
+ipcMain.on('download-url', (event, url) => {
+  if (mainWindow) {
+    mainWindow.webContents.downloadURL(url);
+  }
+});
+
+// Widget IPC handlers
+ipcMain.handle('show-widget', () => {
+  console.log('[MAIN] show-widget handler invoked');
+  if (!overlayWindow) {
+    createOverlayWindow();
+  } else {
+    overlayWindow.show();
+  }
+});
+
+ipcMain.handle('hide-widget', () => {
+  if (overlayWindow) {
+    overlayWindow.hide();
+  }
+});
+
+ipcMain.handle('close-widget', () => {
+  if (overlayWindow) {
+    overlayWindow.close();
+    overlayWindow = null;
+  }
+});
+
+ipcMain.handle('update-widget-position', (event, { x, y }) => {
+  if (overlayWindow) {
+    overlayWindow.setPosition(x, y);
+  }
+});
+
 app.whenReady().then(() => {
   createMainWindow();
-  
+
+  const { session } = require('electron');
+  session.defaultSession.on('will-download', (event, item, webContents) => {
+    // Set the save path, making Electron not to prompt a save dialog.
+    const fileName = item.getFilename();
+    const savePath = path.join(app.getPath('downloads'), 'ClassPoint', fileName);
+    item.setSavePath(savePath);
+
+    item.on('updated', (event, state) => {
+      if (state === 'interrupted') {
+        console.log('Download is interrupted but can be resumed');
+      } else if (state === 'progressing') {
+        if (item.isPaused()) {
+          console.log('Download is paused');
+        } else {
+          console.log(`Received bytes: ${item.getReceivedBytes()}`);
+        }
+      }
+    });
+
+    item.once('done', (event, state) => {
+      if (state === 'completed') {
+        console.log('Download successfully');
+        if (mainWindow) {
+          mainWindow.webContents.send('download-complete', {
+            name: fileName,
+            path: savePath,
+            type: item.getMimeType(),
+            size: item.getTotalBytes(),
+            addedAt: new Date().toISOString()
+          });
+        }
+      } else {
+        console.log(`Download failed: ${state}`);
+      }
+    });
+  });
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createMainWindow();
@@ -80,33 +168,5 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
-  }
-});
-
-// IPC handlers
-ipcMain.handle('show-widget', () => {
-  if (!widgetWindow) {
-    createWidgetWindow();
-  } else {
-    widgetWindow.show();
-  }
-});
-
-ipcMain.handle('hide-widget', () => {
-  if (widgetWindow) {
-    widgetWindow.hide();
-  }
-});
-
-ipcMain.handle('close-widget', () => {
-  if (widgetWindow) {
-    widgetWindow.close();
-    widgetWindow = null;
-  }
-});
-
-ipcMain.handle('update-widget-position', (event, { x, y }) => {
-  if (widgetWindow) {
-    widgetWindow.setPosition(x, y);
   }
 });

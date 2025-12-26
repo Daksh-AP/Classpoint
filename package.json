@@ -1,53 +1,75 @@
 {
   "name": "classpoint",
   "version": "1.0.0",
-  "description": "A React-based desktop app for teachers to track class schedules",
-  "main": "public/electron.js",
-  "homepage": "./",
   "private": true,
-  "dependencies": {
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^14.4.3",
-    "date-fns": "^2.30.0",
-    "lucide-react": "^0.263.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-dropzone": "^14.2.3",
-    "react-scripts": "5.0.1",
-    "tesseract.js": "^4.1.1",
-    "web-vitals": "^2.1.4"
-  },
-  "devDependencies": {
-    "autoprefixer": "^10.4.14",
-    "concurrently": "^7.6.0",
-    "electron": "^25.3.1",
-    "electron-builder": "^24.6.3",
-    "postcss": "^8.4.24",
-    "tailwindcss": "^3.3.3",
-    "wait-on": "^7.0.1"
-  },
+  "homepage": "./",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "npx concurrently \"npm run watch:css\" \"npm run react-start\" \"wait-on http://localhost:3000 && npm run electron-start\"",
+    "react-start": "react-scripts start",
+    "electron-start": "electron .",
+    "build": "npm run build:css && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "electron": "electron .",
-    "electron-dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
-    "electron-pack": "npm run build && electron-builder",
-    "electron-pack-win": "npm run build && electron-builder --win",
-    "electron-pack-mac": "npm run build && electron-builder --mac",
-    "electron-pack-linux": "npm run build && electron-builder --linux",
-    "electron-pack-all": "npm run build && electron-builder --win --mac --linux",
-    "dist": "npm run build && electron-builder --publish=never",
-    "release": "npm run build && electron-builder --publish=always",
-    "preelectron-pack": "npm run build"
+    "build:css": "tailwindcss -i ./src/index.css -o ./src/tailwind.css",
+    "watch:css": "tailwindcss -i ./src/index.css -o ./src/tailwind.css --watch",
+    "dist": "electron-builder",
+    "electron-build": "rimraf dist APP-win32-x64 ClassPoint-win32-x64 && npm run build && npm run dist"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "main": "electron.cjs",
+  "dependencies": {
+    "autoprefixer": "^10.4.21",
+    "file-saver": "^2.0.5",
+    "firebase": "^12.5.0",
+    "framer-motion": "^12.23.24",
+    "lucide-react": "^0.552.0",
+    "postcss": "^8.5.6",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sharp": "^0.34.5",
+    "tailwindcss": "^3.4.18",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "electron": "^35.7.5",
+    "electron-builder": "^24.13.3",
+    "postcss-cli": "^11.0.1",
+    "react-scripts": "^5.0.1",
+    "rimraf": "^6.1.2",
+    "wait-on": "^9.0.3"
+  },
+  "overrides": {
+    "nth-check": "^2.1.1",
+    "postcss": "^8.5.6",
+    "webpack-dev-server": "^5.2.2"
+  },
+  "build": {
+    "appId": "com.classpoint.app",
+    "productName": "ClassPoint",
+    "asar": false,
+    "extends": "react-cra",
+    "files": [
+      "build",
+      "public/electron.js",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "ClassPoint"
+    }
   },
   "browserslist": {
     "production": [
@@ -60,76 +82,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "build": {
-    "appId": "com.classpoint.app",
-    "productName": "ClassPoint",
-    "copyright": "Copyright © 2024 ClassPoint",
-    "directories": {
-      "output": "dist",
-      "buildResources": "build-resources"
-    },
-    "files": [
-      "build/**/*",
-      "node_modules/**/*",
-      "public/electron.js"
-    ],
-    "extraResources": [
-      {
-        "from": "public/chime.mp3",
-        "to": "chime.mp3"
-      }
-    ],
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": ["x64"]
-        },
-        {
-          "target": "portable",
-          "arch": ["x64"]
-        }
-      ],
-      "icon": "build-resources/icon.ico",
-      "publisherName": "ClassPoint",
-      "verifyUpdateCodeSignature": false
-    },
-    "mac": {
-      "category": "public.app-category.education",
-      "target": [
-        {
-          "target": "dmg",
-          "arch": ["x64", "arm64"]
-        }
-      ],
-      "icon": "build-resources/icon.icns"
-    },
-    "linux": {
-      "target": [
-        {
-          "target": "AppImage",
-          "arch": ["x64"]
-        },
-        {
-          "target": "deb",
-          "arch": ["x64"]
-        }
-      ],
-      "icon": "build-resources/icon.png",
-      "category": "Education"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "ClassPoint"
-    },
-    "publish": {
-      "provider": "github",
-      "owner": "your-username",
-      "repo": "classpoint"
-    }
   }
 }

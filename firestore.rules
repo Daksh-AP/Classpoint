@@ -1,0 +1,42 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users can read and write their own timetable.
+    match /timetables/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Users can read and write their own settings.
+    match /user_settings/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Users can manage their own subcollections (students, attendance).
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Smartboard rules remain unchanged.
+    match /smartboards/{smartboardId} {
+      allow read, update, delete: if request.auth != null && resource.data.ownerUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
+    }
+    
+    // Public school data remains readable by authenticated users.
+    match /schoolData/{document=**} {
+      allow read, write: if true;
+    }
+
+    // Announcements can be read and created by any authenticated user.
+    match /announcements/{announcementId} {
+      allow read, create: if request.auth != null;
+    }
+
+    // One-time pins can be created by authenticated users and read by anyone.
+    match /one_time_pins/{pin} {
+      allow read, create: if request.auth != null;
+    }
+  }
+}

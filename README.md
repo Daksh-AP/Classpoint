@@ -1,197 +1,102 @@
+<div align="center">
+
 # ClassPoint
+### Smart Class Management Made Simple
 
-A React-based desktop application for teachers to easily view and track class schedules from scanned or uploaded timetable images.
+<img src="https://img.shields.io/badge/version-1.0.0-blue.svg?style=flat-square" alt="Version">
+<img src="https://img.shields.io/badge/platform-windows-blue.svg?style=flat-square" alt="Platform">
+<img src="https://img.shields.io/badge/license-MIT-green.svg?style=flat-square" alt="License">
 
-## Features
+<br />
+<br />
 
-- **Section Selection**: Choose from Super 1-3 or Whiz 1-3 sections
-- **Timetable Scanner**: Upload timetable images (JPG, PNG, PDF) with OCR text extraction
-- **Section Filtering**: Automatically filter schedules for selected section
-- **Live Desktop Widget**: Always-on widget showing today's schedule
-- **Class Reminders**: 2-minute advance notifications for upcoming classes
-- **Clean UI**: Professional blue/white theme with smooth animations
+> A privacy-first, zero-setup desktop application designed for teachers to effortlessly track schedules, manage classes, and stay organized.
 
-## Tech Stack
+[Download for Windows](https://drive.google.com/file/d/1MZribzPzZLvAZ9V0hXIXFSLIlEOtEmim/view?usp=sharing) · [Report Bug](https://github.com/Windows-Concept/ClassPoint/issues) · [Request Feature](https://github.com/Windows-Concept/ClassPoint/issues)
 
-- **Frontend**: React 18, TailwindCSS
-- **Desktop**: Electron
-- **OCR**: Tesseract.js
-- **Icons**: Lucide React
-- **File Upload**: React Dropzone
+</div>
 
-## Installation
+<br />
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd classpoint
-```
+## ✨ Key Features
 
-2. Install dependencies:
-```bash
-npm install
-```
+| Feature | Description |
+| ------- | ----------- |
+| 📊 **Smart Dashboard** | View your complete weekly timetable with real-time tracking of current and next classes. |
+| 📝 **Manual Entry** | Easily create and manage your class schedules with a beautiful, intuitive interface. |
+| 🔔 **Smart Reminders** | Get customizable notifications before every class so you never miss a transition. |
+| 🖼️ **Desktop Widget** | Always-on-top overlay keeps your schedule visible without cluttering your workspace. |
+| 📈 **Attendance** | Track student attendance, view analytics, and manage rosters efficiently. |
+| 📚 **Resource Hub** | Organize teaching materials, documents, and files in one central location. |
+| 🖊️ **Whiteboard** | Built-in digital whiteboard for quick annotations and explanations. |
+| 🔒 **Privacy First** | All data is stored locally on your device. Zero cloud dependency. |
 
-3. Start development server:
-```bash
-npm run electron-dev
-```
+<br />
 
-4. Build for production:
-```bash
-npm run electron-pack
-```
+## 🚀 Getting Started
 
-## Development Scripts
+### Installation
 
-- `npm start` - Start React development server
-- `npm run electron` - Start Electron app
-- `npm run electron-dev` - Start both React and Electron in development mode
-- `npm run build` - Build React app for production
-- `npm run electron-pack` - Build Electron app for distribution
+1.  **Download the Installer**: [Click here](https://drive.google.com/file/d/1MZribzPzZLvAZ9V0hXIXFSLIlEOtEmim/view?usp=sharing) to download the latest `ClassPoint Setup 1.0.0.exe`.
+2.  **Run Setup**: Double-click the downloaded file to install.
+3.  **Launch**: Open ClassPoint from your desktop or start menu.
 
-## Usage
+### For Developers
 
-### First Launch
-1. Select your section (Super 1-3 or Whiz 1-3)
-2. Upload your timetable image
-3. The app will extract and filter the schedule for your section
+If you want to contribute or build from source:
 
-### Main Dashboard
-- View current and next class information
-- See the complete weekly timetable
-- Toggle the desktop widget on/off
-- Update timetable or change section
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/Windows-Concept/ClassPoint.git
+    cd ClassPoint
+    ```
 
-### Desktop Widget
-- Always-on-top widget showing today's schedule
-- Automatic reminders 2 minutes before classes
-- Minimizable and draggable
-- Updates in real-time
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
 
-## File Structure
+3.  **Run locally**
+    ```bash
+    npm run electron-dev
+    ```
 
-```
-src/
-├── components/
-│   ├── SectionSelector.js    # Section selection screen
-│   ├── MainDashboard.js      # Main application interface
-│   ├── TimetableUploader.js  # File upload and OCR processing
-│   ├── TimetableDisplay.js   # Schedule display component
-│   └── Widget.js             # Desktop widget component
-├── services/
-│   ├── StorageService.js     # Local storage management
-│   ├── OCRService.js         # Text extraction from images
-│   └── TimeService.js        # Time and schedule utilities
-├── App.js                    # Main application component
-├── index.js                  # React entry point
-└── index.css                 # Global styles and Tailwind imports
-```
+4.  **Build for production**
+    ```bash
+    npm run electron-pack
+    ```
 
-## Configuration
+<br />
 
-### Storage
-The app stores data locally using localStorage:
-- Selected section
-- Timetable data
-- Widget position and visibility
-- User preferences
+## 🛠️ Tech Stack
 
-### OCR Processing
-The OCR service uses Tesseract.js to extract text from uploaded images. The parsing logic can be customized in `OCRService.js` to match your specific timetable format.
+Built with modern web technologies:
 
-### Time Management
-The TimeService handles:
-- Current/next class detection
-- Reminder timing
-- Schedule parsing and filtering
-- Time calculations and formatting
+*   **Core**: [Electron](https://www.electronjs.org/), [React 18](https://reactjs.org/), [Node.js](https://nodejs.org/)
+*   **Styling**: [TailwindCSS](https://tailwindcss.com/), [Framer Motion](https://www.framer.com/motion/)
+*   **Data**: LocalStorage, [Firebase](https://firebase.google.com/)
+*   **Icons**: [Lucide React](https://lucide.dev/)
 
-## Customization
+<br />
 
-### Adding New Sections
-Edit the `SECTIONS` array in `SectionSelector.js`:
-```javascript
-const SECTIONS = [
-  { id: 'new_section', name: 'New Section', color: 'bg-purple-500' },
-  // ... existing sections
-];
-```
+## 🤝 Contributing
 
-### Modifying Reminder Time
-Change the reminder time in `Widget.js`:
-```javascript
-// Check for reminder (change from 2 to desired minutes)
-if (next && TimeService.isWithinReminderTime(next.startTime, 5)) {
-  // ... reminder logic
-}
-```
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-### Customizing OCR Parsing
-Modify the `parseExtractedText` method in `OCRService.js` to match your timetable format.
+1.  Fork the Project
+2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4.  Push to the Branch (`git push origin feature/AmazingFeature`)
+5.  Open a Pull Request
 
-## Building for Distribution
+<br />
 
-### Windows
-```bash
-npm run electron-pack
-```
-This creates a Windows installer in the `dist` folder.
+## 📄 License
 
-### macOS
-```bash
-npm run electron-pack
-```
-Creates a macOS app bundle.
+Distributed under the MIT License. See `LICENSE` for more information.
 
-### Linux
-```bash
-npm run electron-pack
-```
-Creates an AppImage file.
+<br />
 
-## Troubleshooting
-
-### OCR Issues
-- Ensure timetable images are clear and high-resolution
-- Text should be horizontal and well-lit
-- PDF support requires additional configuration
-
-### Widget Not Showing
-- Check if widget is enabled in main dashboard
-- Verify Electron permissions for always-on-top windows
-- Try repositioning the widget
-
-### Performance
-- Large timetable images may take longer to process
-- Consider resizing images before upload for faster OCR
-- Widget updates every second - adjust if needed for performance
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For issues and questions:
-1. Check the troubleshooting section
-2. Review existing GitHub issues
-3. Create a new issue with detailed information
-
-## Roadmap
-
-- [ ] PDF processing support
-- [ ] Multiple timetable formats
-- [ ] Export/import functionality
-- [ ] Dark theme support
-- [ ] Custom notification sounds
-- [ ] Schedule sharing features
-- [ ] Mobile companion app
+<div align="center">
+    <p>Made with ❤️ for teachers everywhere.</p>
+</div>

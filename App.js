@@ -9,6 +9,16 @@ function App() {
   const [timetableData, setTimetableData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isWidget, setIsWidget] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(StorageService.getSettings().theme === 'dark');
+
+  useEffect(() => {
+    // Apply dark mode class to body
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
 
   useEffect(() => {
     // Check if running as widget
@@ -21,14 +31,17 @@ function App() {
       try {
         const savedSection = StorageService.getSelectedSection();
         const savedTimetable = StorageService.getTimetableData();
-        
+        const savedSettings = StorageService.getSettings();
+
         if (savedSection) {
           setSelectedSection(savedSection);
         }
-        
+
         if (savedTimetable) {
           setTimetableData(savedTimetable);
         }
+
+        setIsDarkMode(savedSettings.theme === 'dark');
       } catch (error) {
         console.error('Error loading saved data:', error);
       } finally {
@@ -44,9 +57,14 @@ function App() {
     StorageService.saveSelectedSection(section);
   };
 
-  const handleTimetableUpload = (data) => {
+  const handleTimetableUpdate = (data) => { // Renamed from handleTimetableUpload
     setTimetableData(data);
     StorageService.saveTimetableData(data);
+  };
+
+  const handleSettingsChange = (newSettings) => {
+    setIsDarkMode(newSettings.theme === 'dark');
+    // StorageService.saveSettings is called within SettingsModal
   };
 
   if (isLoading) {
@@ -63,7 +81,7 @@ function App() {
   // Widget mode
   if (isWidget) {
     return (
-      <Widget 
+      <Widget
         selectedSection={selectedSection}
         timetableData={timetableData}
       />
@@ -71,21 +89,29 @@ function App() {
   }
 
   // Main app mode
-  if (!selectedSection) {
-    return (
-      <SectionSelector 
-        onSectionSelect={handleSectionSelect}
-      />
-    );
-  }
-
   return (
-    <MainDashboard
-      selectedSection={selectedSection}
-      timetableData={timetableData}
-      onTimetableUpload={handleTimetableUpload}
-      onSectionChange={handleSectionSelect}
-    />
+    <div className="app-background">
+      {/* Liquid Bubbles for background effect */}
+      <div className="liquid-bubble"></div>
+      <div className="liquid-bubble"></div>
+      <div className="liquid-bubble"></div>
+      <div className="liquid-bubble"></div>
+      <div className="liquid-bubble"></div>
+
+      {!selectedSection ? (
+        <SectionSelector
+          onSectionSelect={handleSectionSelect}
+        />
+      ) : (
+        <MainDashboard
+          selectedSection={selectedSection}
+          timetableData={timetableData}
+          onTimetableUpdate={handleTimetableUpdate} // Renamed prop
+          onSectionChange={handleSectionSelect}
+          onSettingsChange={handleSettingsChange} // Pass settings change handler
+        />
+      )}
+    </div>
   );
 }
 

@@ -80,30 +80,15 @@ export class NotificationService {
   }
 
   static playChime() {
-    // Try to play a subtle chime sound
     try {
-      // Create a simple beep using Web Audio API
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
-
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.3);
-
+      const audio = new Audio('/chime.mp3'); // Path to the chime.mp3 file
+      audio.play().catch(error => {
+        console.warn('Failed to play chime sound:', error);
+        // Fallback to a silent notification or log the issue if sound is critical
+      });
       return true;
     } catch (error) {
-      console.log('Could not play chime:', error);
+      console.error('Error playing chime:', error);
       return false;
     }
   }

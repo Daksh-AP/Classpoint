@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f8fafc;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Smooth transitions */
+* {
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* More fluid transition */
+}
+
+/* Widget specific styles */
+.widget-mode {
+  background: transparent !important;
+}
+
+.widget-mode body {
+  background: transparent !important;
+}
+
+/* Glass effect */
+.glass {
+  backdrop-filter: blur(15px); /* Increased blur */
+  background: rgba(255, 255, 255, 0.8); /* Slightly more transparent */
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Slightly more visible border */
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); /* Added subtle shadow */
+  border-radius: 10px; /* Rounded corners for glass effect */
+}

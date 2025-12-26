@@ -1,120 +1,210 @@
+import { db, auth } from '../firebase';
+import { doc, setDoc, getDoc, collection, writeBatch } from 'firebase/firestore';
+
 export class StorageService {
-  static KEYS = {
-    SELECTED_SECTION: 'classpoint_selected_section',
-    TIMETABLE_DATA: 'classpoint_timetable_data',
-    WIDGET_POSITION: 'classpoint_widget_position',
-    WIDGET_VISIBLE: 'classpoint_widget_visible',
-    SETTINGS: 'classpoint_settings'
-  };
-
-  // Section Management
-  static saveSelectedSection(section) {
+  // --- Firestore-based Settings Management ---
+  static async saveAllSettings(settings) {
+    const user = auth.currentUser;
+    if (!user) return;
     try {
-      localStorage.setItem(this.KEYS.SELECTED_SECTION, JSON.stringify(section));
+      const settingsRef = doc(db, 'user_settings', user.uid);
+      await setDoc(settingsRef, settings, { merge: true });
     } catch (error) {
-      console.error('Failed to save selected section:', error);
+      console.error('🔥 Failed to save settings to Firestore:', error);
     }
   }
 
-  static getSelectedSection() {
+  static async getAllSettings() {
+    const user = auth.currentUser;
+    if (!user) return {};
     try {
-      const saved = localStorage.getItem(this.KEYS.SELECTED_SECTION);
-      return saved ? JSON.parse(saved) : null;
+      const settingsRef = doc(db, 'user_settings', user.uid);
+      const docSnap = await getDoc(settingsRef);
+      return docSnap.exists() ? docSnap.data() : {};
     } catch (error) {
-      console.error('Failed to load selected section:', error);
-      return null;
+      console.error('🔥 Failed to load settings from Firestore:', error);
+      return {};
     }
   }
 
-  // Timetable Data Management
-  static saveTimetableData(data) {
+  // Section Management (Now with Firestore)
+  static async saveSelectedSection(section) {
+    await this.saveAllSettings({ selectedSection: section });
+  }
+
+  static async getSelectedSection() {
+    const settings = await this.getAllSettings();
+    return settings.selectedSection || null;
+  }
+
+  // Timetable Data Management (Now with Firestore)
+  static async saveTimetableData(data) {
+    const user = auth.currentUser;
+    if (!user) {
+      console.error("No user logged in, cannot save timetable to Firestore.");
+      return;
+    }
     try {
+      const timetableRef = doc(db, 'timetables', user.uid);
       const dataToSave = {
         ...data,
-        savedAt: new Date().toISOString()
+        savedAt: new Date().toISOString(),
+        ownerUid: user.uid,
       };
-      localStorage.setItem(this.KEYS.TIMETABLE_DATA, JSON.stringify(dataToSave));
+      await setDoc(timetableRef, dataToSave);
+      console.log("✅ Timetable saved to Firestore");
     } catch (error) {
-      console.error('Failed to save timetable data:', error);
+      console.error('🔥 Failed to save timetable data to Firestore:', error);
     }
   }
 
-  static getTimetableData() {
+  static async getTimetableData() {
+    const user = auth.currentUser;
+    if (!user) {
+      console.error("No user logged in, cannot fetch timetable from Firestore.");
+      return null;
+    }
     try {
-      const saved = localStorage.getItem(this.KEYS.TIMETABLE_DATA);
-      return saved ? JSON.parse(saved) : null;
+      const timetableRef = doc(db, 'timetables', user.uid);
+      const docSnap = await getDoc(timetableRef);
+      if (docSnap.exists()) {
+        console.log("📘 Timetable data fetched from Firestore");
+        return docSnap.data();
+      } else {
+        console.warn("⚠️ No timetable data found in Firestore for this user.");
+        return null;
+      }
     } catch (error) {
-      console.error('Failed to load timetable data:', error);
+      console.error('🔥 Failed to load timetable data from Firestore:', error);
       return null;
     }
   }
 
-  // Widget Position Management
-  static saveWidgetPosition(position) {
-    try {
-      localStorage.setItem(this.KEYS.WIDGET_POSITION, JSON.stringify(position));
-    } catch (error) {
-      console.error('Failed to save widget position:', error);
-    }
+  // Widget Position Management (Now with Firestore)
+  static async saveWidgetPosition(position) {
+    await this.saveAllSettings({ widgetPosition: position });
   }
 
-  static getWidgetPosition() {
-    try {
-      const saved = localStorage.getItem(this.KEYS.WIDGET_POSITION);
-      return saved ? JSON.parse(saved) : { x: 20, y: 20 };
-    } catch (error) {
-      console.error('Failed to load widget position:', error);
-      return { x: 20, y: 20 };
-    }
+  static async getWidgetPosition() {
+    const settings = await this.getAllSettings();
+    return settings.widgetPosition || { x: 20, y: 20 };
   }
 
-  // Widget Visibility
-  static saveWidgetVisibility(visible) {
-    try {
-      localStorage.setItem(this.KEYS.WIDGET_VISIBLE, JSON.stringify(visible));
-    } catch (error) {
-      console.error('Failed to save widget visibility:', error);
-    }
+  // Widget Visibility (Now with Firestore)
+  static async saveWidgetVisibility(visible) {
+    await this.saveAllSettings({ widgetVisible: visible });
   }
 
-  static getWidgetVisibility() {
-    try {
-      const saved = localStorage.getItem(this.KEYS.WIDGET_VISIBLE);
-      return saved ? JSON.parse(saved) : false;
-    } catch (error) {
-      console.error('Failed to load widget visibility:', error);
-      return false;
-    }
+  static async getWidgetVisibility() {
+    const settings = await this.getAllSettings();
+    return settings.widgetVisible || false;
   }
 
-  // General Settings
-  static saveSettings(settings) {
-    try {
-      const currentSettings = this.getSettings();
-      const updatedSettings = { ...currentSettings, ...settings };
-      localStorage.setItem(this.KEYS.SETTINGS, JSON.stringify(updatedSettings));
-    } catch (error) {
-      console.error('Failed to save settings:', error);
-    }
+  // General Settings (Now with Firestore)
+  static async saveSettings(settings) {
+    await this.saveAllSettings({ settings });
   }
 
+  // Synchronous version for initial state - returns defaults immediately
   static getSettings() {
+    // Return default settings synchronously for initial state
+    // The actual Firestore settings will be loaded via useEffect
+    return {
+      theme: 'light',
+      notifications: true,
+      reminderTime: 2,
+      autoStartWidget: false,
+      weatherLocation: 'Mumbai'
+    };
+  }
+
+  // Async version for loading from Firestore
+  static async getSettingsAsync() {
+    const settings = await this.getAllSettings();
+    return settings.settings || {
+      theme: 'light',
+      notifications: true,
+      reminderTime: 2,
+      autoStartWidget: false,
+      weatherLocation: 'Mumbai'
+    };
+  }
+
+  // Widget Specific Settings (Now with Firestore)
+  static async saveWidgetSettings(widgetSettings) {
+    await this.saveAllSettings({ widgetSettings });
+  }
+
+  // Synchronous version for initial state
+  static getWidgetSettings() {
+    return {
+      fontSize: 'base',
+      transparency: 100,
+      width: 320,
+      height: 400,
+      theme: 'system',
+    };
+  }
+
+  // Async version for loading from Firestore
+  static async getWidgetSettingsAsync() {
+    const settings = await this.getAllSettings();
+    return settings.widgetSettings || {
+      fontSize: 'base',
+      transparency: 100,
+      width: 320,
+      height: 400,
+      theme: 'system',
+    };
+  }
+
+  // Attendance Data Management (Now with Firestore)
+  static async saveAttendanceData(sectionId, date, attendanceData) {
+    const user = auth.currentUser;
+    if (!user) return;
     try {
-      const saved = localStorage.getItem(this.KEYS.SETTINGS);
-      return saved ? JSON.parse(saved) : {
-        theme: 'light',
-        notifications: true,
-        reminderTime: 2, // minutes
-        autoStartWidget: false
-      };
+      const attendanceRef = doc(db, 'users', user.uid, 'attendance', `${sectionId}_${date}`);
+      await setDoc(attendanceRef, { attendanceData });
     } catch (error) {
-      console.error('Failed to load settings:', error);
-      return {
-        theme: 'light',
-        notifications: true,
-        reminderTime: 2,
-        autoStartWidget: false
-      };
+      console.error('🔥 Failed to save attendance data to Firestore:', error);
+    }
+  }
+
+  static async getAttendanceData(sectionId, date) {
+    const user = auth.currentUser;
+    if (!user) return null;
+    try {
+      const attendanceRef = doc(db, 'users', user.uid, 'attendance', `${sectionId}_${date}`);
+      const docSnap = await getDoc(attendanceRef);
+      return docSnap.exists() ? docSnap.data().attendanceData : null;
+    } catch (error) {
+      console.error('🔥 Failed to load attendance data from Firestore:', error);
+      return null;
+    }
+  }
+
+  // Student Data Management (Now with Firestore)
+  static async saveStudents(sectionId, students) {
+    const user = auth.currentUser;
+    if (!user) return;
+    try {
+      const studentsRef = doc(db, 'users', user.uid, 'students', sectionId);
+      await setDoc(studentsRef, { students });
+    } catch (error) {
+      console.error('🔥 Failed to save students data to Firestore:', error);
+    }
+  }
+
+  static async getStudents(sectionId) {
+    const user = auth.currentUser;
+    if (!user) return [];
+    try {
+      const studentsRef = doc(db, 'users', user.uid, 'students', sectionId);
+      const docSnap = await getDoc(studentsRef);
+      return docSnap.exists() ? docSnap.data().students : [];
+    } catch (error) {
+      console.error('🔥 Failed to load students data from Firestore:', error);
+      return [];
     }
   }
 
@@ -122,7 +212,18 @@ export class StorageService {
   static clearAllData() {
     try {
       Object.values(this.KEYS).forEach(key => {
-        localStorage.removeItem(key);
+        // Special handling for attendance and student data prefixes
+        if (key.startsWith(this.KEYS.ATTENDANCE_DATA_PREFIX) || key.startsWith(this.KEYS.STUDENTS_PREFIX)) {
+          // Iterate through all localStorage keys and remove matching data
+          for (let i = 0; i < localStorage.length; i++) {
+            const storageKey = localStorage.key(i);
+            if (storageKey.startsWith(this.KEYS.ATTENDANCE_DATA_PREFIX) || storageKey.startsWith(this.KEYS.STUDENTS_PREFIX)) {
+              localStorage.removeItem(storageKey);
+            }
+          }
+        } else {
+          localStorage.removeItem(key);
+        }
       });
     } catch (error) {
       console.error('Failed to clear data:', error);
@@ -134,9 +235,30 @@ export class StorageService {
     try {
       const data = {};
       Object.entries(this.KEYS).forEach(([name, key]) => {
-        const value = localStorage.getItem(key);
-        if (value) {
-          data[name] = JSON.parse(value);
+        // Handle attendance and student data separately
+        if (key.startsWith(this.KEYS.ATTENDANCE_DATA_PREFIX)) {
+          const attendanceRecords = {};
+          for (let i = 0; i < localStorage.length; i++) {
+            const storageKey = localStorage.key(i);
+            if (storageKey.startsWith(this.KEYS.ATTENDANCE_DATA_PREFIX)) {
+              attendanceRecords[storageKey] = JSON.parse(localStorage.getItem(storageKey));
+            }
+          }
+          data['ATTENDANCE_RECORDS'] = attendanceRecords; // Store all attendance records under a single key
+        } else if (key.startsWith(this.KEYS.STUDENTS_PREFIX)) {
+          const studentRecords = {};
+          for (let i = 0; i < localStorage.length; i++) {
+            const storageKey = localStorage.key(i);
+            if (storageKey.startsWith(this.KEYS.STUDENTS_PREFIX)) {
+              studentRecords[storageKey] = JSON.parse(localStorage.getItem(storageKey));
+            }
+          }
+          data['STUDENT_RECORDS'] = studentRecords; // Store all student records under a single key
+        } else {
+          const value = localStorage.getItem(key);
+          if (value) {
+            data[name] = JSON.parse(value);
+          }
         }
       });
       return data;
@@ -150,9 +272,21 @@ export class StorageService {
   static importData(data) {
     try {
       Object.entries(data).forEach(([name, value]) => {
-        const key = this.KEYS[name];
-        if (key) {
-          localStorage.setItem(key, JSON.stringify(value));
+        if (name === 'ATTENDANCE_RECORDS') {
+          // Import all attendance records
+          Object.entries(value).forEach(([attendanceKey, attendanceValue]) => {
+            localStorage.setItem(attendanceKey, JSON.stringify(attendanceValue));
+          });
+        } else if (name === 'STUDENT_RECORDS') {
+          // Import all student records
+          Object.entries(value).forEach(([studentKey, studentValue]) => {
+            localStorage.setItem(studentKey, JSON.stringify(studentValue));
+          });
+        } else {
+          const key = this.KEYS[name];
+          if (key) {
+            localStorage.setItem(key, JSON.stringify(value));
+          }
         }
       });
       return true;
