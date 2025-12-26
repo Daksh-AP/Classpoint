@@ -10,7 +10,7 @@
 <br />
 <br />
 
-> A privacy-first, zero-setup desktop application designed for teachers to effortlessly track schedules, manage classes, and stay organized.
+> A powerful, zero-setup desktop application designed for teachers to effortlessly track schedules, manage classes, and stay organized.
 
 [Download for Windows](https://drive.google.com/file/d/1MZribzPzZLvAZ9V0hXIXFSLIlEOtEmim/view?usp=sharing) · [Report Bug](https://github.com/Windows-Concept/ClassPoint/issues) · [Request Feature](https://github.com/Windows-Concept/ClassPoint/issues)
 
@@ -29,7 +29,7 @@
 | 📈 **Attendance** | Track student attendance, view analytics, and manage rosters efficiently. |
 | 📚 **Resource Hub** | Organize teaching materials, documents, and files in one central location. |
 | 🖊️ **Whiteboard** | Built-in digital whiteboard for quick annotations and explanations. |
-| 🔒 **Privacy First** | All data is stored locally on your device. Zero cloud dependency. |
+| ☁️ **Cloud Integration** | Powered by Firebase for reliable backend services and data management. |
 
 <br />
 
