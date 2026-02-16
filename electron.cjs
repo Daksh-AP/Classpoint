@@ -1,5 +1,5 @@
 // Main process for ClassPoint Electron app
-const { app, BrowserWindow, ipcMain, desktopCapturer } = require('electron');
+const { app, BrowserWindow, ipcMain, desktopCapturer, screen } = require('electron');
 const path = require('path');
 console.log('[MAIN] electron.cjs loaded');
 const isDev = process.env.NODE_ENV === 'development' || process.defaultApp || /[\\/]electron-prebuilt[\\/]/.test(process.execPath) || /[\\/]electron[\\/]/.test(process.execPath);
@@ -9,8 +9,8 @@ let overlayWindow;
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 1920,
+    height: 1080,
     icon: path.join(__dirname, 'public', 'icon.png'),
     webPreferences: {
       nodeIntegration: true,
@@ -26,6 +26,10 @@ function createMainWindow() {
     : `file://${path.join(__dirname, 'build/index.html')}`;
 
   mainWindow.loadURL(startUrl);
+
+  // Disable the default menu bar
+  mainWindow.setMenuBarVisibility(false);
+  mainWindow.removeMenu();
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
@@ -60,12 +64,12 @@ function createOverlayWindow() {
   }
 
   overlayWindow = new BrowserWindow({
-    width: 1920,
-    height: 1080,
+    width: 350,
+    height: 200,
     transparent: true,
     frame: false,
     alwaysOnTop: true,
-    skipTaskbar: true,
+    skipTaskbar: false,
     resizable: false,
     webPreferences: {
       nodeIntegration: true,
@@ -74,6 +78,8 @@ function createOverlayWindow() {
     },
   });
 
+  overlayWindow.setIgnoreMouseEvents(false);
+  // overlayWindow.maximize(); // Removed maximization for widget mode = isDev
   const overlayUrl = isDev
     ? 'http://localhost:3000/#/overlay'
     : `file://${path.join(__dirname, 'build/index.html')}#/overlay`;
@@ -145,10 +151,32 @@ ipcMain.handle('close-widget', () => {
     overlayWindow.close();
     overlayWindow = null;
   }
+  // Notify main window that widget is closed
+  if (mainWindow) {
+    mainWindow.webContents.send('widget-closed');
+  }
 });
 
 ipcMain.handle('update-widget-position', (event, { x, y }) => {
   if (overlayWindow) overlayWindow.setPosition(x, y);
+});
+
+ipcMain.handle('set-widget-size', (event, { width, height }) => {
+  if (overlayWindow) {
+    overlayWindow.setSize(width, height);
+  }
+});
+
+ipcMain.on('broadcast-widget-data', (event, data) => {
+  if (overlayWindow) {
+    overlayWindow.webContents.send('widget-data-update', data);
+  }
+});
+
+ipcMain.on('request-widget-data', (event) => {
+  if (mainWindow) {
+    mainWindow.webContents.send('request-widget-sync');
+  }
 });
 
 app.whenReady().then(() => {

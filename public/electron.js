@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+const fs = require('fs');
 console.log('[MAIN] electron.cjs loaded');
 const isDev = process.env.NODE_ENV === 'development' || process.defaultApp || /[\\/]electron-prebuilt[\\/]/.test(process.execPath) || /[\\/]electron[\\/]/.test(process.execPath);
 
@@ -8,9 +9,10 @@ let overlayWindow;
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 1920,
+    height: 1080,
     webPreferences: {
+      zoomFactor: 1.0,
       nodeIntegration: true,
       contextIsolation: false,
       webSecurity: !isDev,
@@ -44,12 +46,12 @@ function createOverlayWindow() {
   }
 
   overlayWindow = new BrowserWindow({
-    width: 1920,
-    height: 1080,
+    width: 350,
+    height: 200,
     transparent: true,
     frame: false,
     alwaysOnTop: true,
-    skipTaskbar: true,
+    skipTaskbar: false,
     resizable: false,
     webPreferences: {
       nodeIntegration: true,
@@ -58,7 +60,7 @@ function createOverlayWindow() {
   });
 
   overlayWindow.setIgnoreMouseEvents(false);
-  overlayWindow.maximize();
+  // overlayWindow.maximize(); // Removed maximization for widget mode
 
   overlayWindow.loadURL(
     isDev
@@ -83,9 +85,16 @@ ipcMain.on('close-overlay', () => {
   }
 });
 
-ipcMain.on('download-url', (event, url) => {
+ipcMain.on('broadcast-widget-data', (event, data) => {
+  if (overlayWindow) {
+    overlayWindow.webContents.send('widget-data-update', data);
+  }
+});
+
+ipcMain.on('request-widget-data', (event) => {
+  // Ask main window to send data
   if (mainWindow) {
-    mainWindow.webContents.downloadURL(url);
+    mainWindow.webContents.send('request-widget-sync');
   }
 });
 
@@ -118,14 +127,27 @@ ipcMain.handle('update-widget-position', (event, { x, y }) => {
   }
 });
 
+ipcMain.handle('set-widget-size', (event, { width, height }) => {
+  if (overlayWindow) {
+    overlayWindow.setSize(width, height);
+  }
+});
+
 app.whenReady().then(() => {
   createMainWindow();
 
   const { session } = require('electron');
-  session.defaultSession.on('will-download', (event, item, webContents) => {
+
+  const handleDownload = (event, item, webContents) => {
+    // Ensure the download directory exists
+    const downloadFolder = path.join(app.getPath('downloads'), 'ClassPoint');
+    if (!fs.existsSync(downloadFolder)) {
+      fs.mkdirSync(downloadFolder, { recursive: true });
+    }
+
     // Set the save path, making Electron not to prompt a save dialog.
     const fileName = item.getFilename();
-    const savePath = path.join(app.getPath('downloads'), 'ClassPoint', fileName);
+    const savePath = path.join(downloadFolder, fileName);
     item.setSavePath(savePath);
 
     item.on('updated', (event, state) => {
@@ -156,7 +178,10 @@ app.whenReady().then(() => {
         console.log(`Download failed: ${state}`);
       }
     });
-  });
+  };
+
+  session.defaultSession.on('will-download', handleDownload);
+  session.fromPartition('persist:browser').on('will-download', handleDownload);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

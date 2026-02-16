@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, RotateCw, X, Plus, Home, Search, MoreVertical, ExternalLink, Bookmark } from 'lucide-react';
 
-const Browser = ({ onClose }) => {
+const Browser = ({ onClose, initialUrl = 'https://www.google.com' }) => {
     const webviewRef = useRef(null);
     const [tabs, setTabs] = useState([
-        { id: 1, title: 'New Tab', url: 'https://www.google.com', isActive: true },
+        { id: 1, title: 'New Tab', url: initialUrl, isActive: true },
     ]);
     const [activeTabId, setActiveTabId] = useState(1);
-    const [currentUrl, setCurrentUrl] = useState('https://www.google.com');
-    const [inputUrl, setInputUrl] = useState('https://www.google.com');
+    const [currentUrl, setCurrentUrl] = useState(initialUrl);
+    const [inputUrl, setInputUrl] = useState(initialUrl);
     const [canGoBack, setCanGoBack] = useState(false);
     const [canGoForward, setCanGoForward] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -185,7 +185,6 @@ const Browser = ({ onClose }) => {
                         className="w-full h-full"
                         allowpopups="true"
                         webpreferences="contextIsolation=yes, nodeIntegration=no"
-                        partition="persist:browser"
                     />
                 </div>
             </div>

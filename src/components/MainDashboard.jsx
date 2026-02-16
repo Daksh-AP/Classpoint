@@ -17,6 +17,7 @@ import {
   Globe,
   Quote,
   Timer,
+  Share2,
 } from 'lucide-react';
 import SettingsModal from './SettingsModal.jsx';
 import ManualTimetableEntry from './ManualTimetableEntry.jsx';
@@ -137,12 +138,29 @@ const MainDashboard = ({
     setShowManualEntry(false);
   }, [onTimetableUpload]);
 
+  // Listen for widget close events from Electron (e.g. user clicked X on widget)
+  useEffect(() => {
+    if (window.require) {
+      const { ipcRenderer } = window.require('electron');
+      const handleWidgetClosed = () => {
+        setWidgetVisible(false);
+      };
+
+      ipcRenderer.on('widget-closed', handleWidgetClosed);
+
+      return () => {
+        ipcRenderer.removeListener('widget-closed', handleWidgetClosed);
+      };
+    }
+  }, []);
+
   const toggleWidget = useCallback(() => {
     if (window.require) {
       const { ipcRenderer } = window.require('electron');
       if (widgetVisible) {
         ipcRenderer.invoke('hide-widget');
       } else {
+        console.log("Invoking show-widget");
         ipcRenderer.invoke('show-widget');
       }
       setWidgetVisible(!widgetVisible);
@@ -170,12 +188,13 @@ const MainDashboard = ({
       {/* Background Blobs - Optimized */}
       {/* Background Blobs - Optimized (Static) */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary-900/10 rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
-        <div className="absolute bottom-[-20%] right-[-10%] w-96 h-96 bg-accent-900/10 rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
+        {/* Simplified blobs without heavy blur/mix-blend-screen which taxes Intel UHD */}
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary-900/20 rounded-full opacity-20"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-96 h-96 bg-accent-900/20 rounded-full opacity-20"></div>
       </div>
 
       <header className="glass-card mx-4 mt-4 p-4 sticky top-4 z-50 border-white/10">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-screen-2xl mx-auto">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
               <button onClick={openMenu} className="p-2 rounded-lg hover:bg-white/10 transition-colors text-slate-300 hover:text-white">
@@ -197,12 +216,12 @@ const MainDashboard = ({
 
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => setShowAttendanceTracker(true)}
-                  className="glass-button flex items-center space-x-2 text-sm bg-primary-600/20 hover:bg-primary-600/30 border-primary-500/30 text-primary-200"
-                  title="Open Attendance Tracker"
+                  onClick={() => onShowBrowser('https://quickdrop-drab.vercel.app/')}
+                  className="glass-button flex items-center space-x-2 text-sm bg-indigo-600/20 hover:bg-indigo-600/30 border-indigo-500/30 text-indigo-200"
+                  title="Open Quickdrop"
                 >
-                  <UserCheck className="w-4 h-4" />
-                  <span className="hidden sm:inline">Attendance</span>
+                  <Share2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Quickdrop</span>
                 </button>
 
                 <button
@@ -226,7 +245,7 @@ const MainDashboard = ({
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+      <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
 
 
         {showManualEntry ? (

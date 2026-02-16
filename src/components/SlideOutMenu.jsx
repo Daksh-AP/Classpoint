@@ -1,7 +1,7 @@
 import React from 'react';
-import { X, Folder, UserCheck, PenTool, Maximize, Globe, Calendar, Clock } from 'lucide-react';
+import { X, Folder, UserCheck, PenTool, Maximize, Globe, Calendar, Clock, Users } from 'lucide-react';
 
-const SlideOutMenu = ({ isOpen, onClose, onShowResourceHub, onShowAttendance, onShowAttendanceLogger, onShowWhiteboard, onShowBrowser, onShowTimer }) => {
+const SlideOutMenu = ({ isOpen, onClose, onShowResourceHub, onShowAttendance, onShowAttendanceLogger, onShowWhiteboard, onShowBrowser, onShowTimer, onShowSeatingChart }) => {
   return (
     <>
       {/* Backdrop */}
@@ -93,6 +93,18 @@ const SlideOutMenu = ({ isOpen, onClose, onShowResourceHub, onShowAttendance, on
               >
                 <Clock className="w-5 h-5 group-hover:text-accent-400 transition-colors" />
                 <span className="group-hover:translate-x-1 transition-transform duration-300">Timer</span>
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => {
+                  onShowSeatingChart();
+                  onClose();
+                }}
+                className="nav-item w-full group"
+              >
+                <Users className="w-5 h-5 group-hover:text-accent-400 transition-colors" />
+                <span className="group-hover:translate-x-1 transition-transform duration-300">Seating Chart</span>
               </button>
             </li>
           </ul>

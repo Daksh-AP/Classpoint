@@ -10,8 +10,10 @@ import Whiteboard from './components/Whiteboard.jsx';
 import WhiteboardOverlay from './components/WhiteboardOverlay.jsx';
 import Browser from './components/Browser.jsx';
 import ImageViewer from './components/ImageViewer.jsx';
+import PDFViewer from './components/PDFViewer.jsx';
 import AttendanceLogger from './components/AttendanceLogger.jsx';
 import Timer from './components/Timer.jsx';
+import SeatingChartBuilder from './components/SeatingChartBuilder.jsx';
 import { db, getDoc } from './firebase.js';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { auth } from './firebase.js';
@@ -24,9 +26,9 @@ function App() {
   // Check if we're in overlay mode
   const isOverlayMode = window.location.hash === '#/overlay';
 
-  // If overlay mode, render only the overlay
+  // If overlay mode, render only the widget
   if (isOverlayMode) {
-    return <WhiteboardOverlay />;
+    return <Widget isOverlay={true} />;
   }
 
   const [selectedSection, setSelectedSection] = useState(null);
@@ -38,9 +40,13 @@ function App() {
   const [showResourceHub, setShowResourceHub] = useState(false);
   const [showWhiteboard, setShowWhiteboard] = useState(false);
   const [showBrowser, setShowBrowser] = useState(false);
+  const [browserUrl, setBrowserUrl] = useState('https://www.google.com'); // Default URL
   const [showTimer, setShowTimer] = useState(false);
+  const [showSeatingChart, setShowSeatingChart] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [showPDFViewer, setShowPDFViewer] = useState(false);
+  const [selectedPDF, setSelectedPDF] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [email, setEmail] = useState('');
@@ -75,14 +81,37 @@ function App() {
       handleOpenImage(image);
     };
 
+    const handleRequestWidgetSync = () => {
+      console.log("App: request-widget-sync received", { selectedSection, timetableData });
+      // Send whatever we have, even if null, to verify connectivity
+      ipcRenderer.send('broadcast-widget-data', {
+        section: selectedSection,
+        timetable: timetableData
+      });
+    };
+
     ipcRenderer.on('download-complete', handleDownloadComplete);
     ipcRenderer.on('screen-captured', handleScreenCaptured);
+    ipcRenderer.on('request-widget-sync', handleRequestWidgetSync);
 
     return () => {
       ipcRenderer.removeListener('download-complete', handleDownloadComplete);
       ipcRenderer.removeListener('screen-captured', handleScreenCaptured);
+      ipcRenderer.removeListener('request-widget-sync', handleRequestWidgetSync);
     };
-  }, [selectedSection]);
+  }, [selectedSection, timetableData]);
+
+  // Broadcast data to widget when it changes
+  useEffect(() => {
+    const { ipcRenderer } = window.require ? window.require('electron') : { ipcRenderer: null };
+    if (ipcRenderer) {
+      console.log("App: Broadcasting update", { selectedSection, timetableData });
+      ipcRenderer.send('broadcast-widget-data', {
+        section: selectedSection,
+        timetable: timetableData
+      });
+    }
+  }, [selectedSection, timetableData]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -199,7 +228,20 @@ function App() {
     setShowWhiteboard(false);
     setShowBrowser(false);
     setShowTimer(false);
+    setShowSeatingChart(false);
     setShowAttendanceLogger(false);
+  }, []);
+
+  const handleOpenPDF = useCallback((pdfPath) => {
+    setSelectedPDF(pdfPath);
+    setShowPDFViewer(true);
+    setShowResourceHub(false);
+    setShowWhiteboard(false);
+    setShowBrowser(false);
+    setShowTimer(false);
+    setShowSeatingChart(false);
+    setShowAttendanceLogger(false);
+    setShowImageViewer(false);
   }, []);
 
   const handleSaveAnnotatedImage = async (dataUrl) => {
@@ -313,6 +355,8 @@ function App() {
           setShowBrowser(false);
           setShowImageViewer(false);
           setShowAttendanceLogger(false);
+          setShowSeatingChart(false);
+          setShowPDFViewer(false);
         }}
         onShowAttendanceLogger={() => {
           setShowAttendanceLogger(true);
@@ -321,6 +365,7 @@ function App() {
           setShowBrowser(false);
           setShowTimer(false);
           setShowImageViewer(false);
+          setShowSeatingChart(false);
         }}
         onShowWhiteboard={() => {
           setShowWhiteboard(true);
@@ -328,6 +373,8 @@ function App() {
           setShowBrowser(false);
           setShowImageViewer(false);
           setShowAttendanceLogger(false);
+          setShowSeatingChart(false);
+          setShowPDFViewer(false);
         }}
         onShowBrowser={() => {
           setShowBrowser(true);
@@ -336,6 +383,7 @@ function App() {
           setShowImageViewer(false);
           setShowAttendanceLogger(false);
           onShowAttendanceLogger(false);
+          setShowSeatingChart(false);
         }}
         onShowTimer={() => {
           setShowTimer(true);
@@ -344,6 +392,17 @@ function App() {
           setShowBrowser(false);
           setShowImageViewer(false);
           setShowAttendanceLogger(false);
+          setShowSeatingChart(false);
+          setShowPDFViewer(false);
+        }}
+        onShowSeatingChart={() => {
+          setShowSeatingChart(true);
+          setShowResourceHub(false);
+          setShowWhiteboard(false);
+          setShowBrowser(false);
+          setShowImageViewer(false);
+          setShowAttendanceLogger(false);
+          setShowTimer(false);
         }}
       />
 
@@ -361,6 +420,8 @@ function App() {
           setShowBrowser(false);
           setShowImageViewer(false);
           setShowAttendanceLogger(false);
+          setShowSeatingChart(false);
+          setShowPDFViewer(false);
         }}
         onShowWhiteboard={() => {
           setShowWhiteboard(true);
@@ -368,13 +429,18 @@ function App() {
           setShowBrowser(false);
           setShowImageViewer(false);
           setShowAttendanceLogger(false);
+          setShowSeatingChart(false);
+          setShowPDFViewer(false);
         }}
-        onShowBrowser={() => {
+        onShowBrowser={(url) => {
+          setBrowserUrl(url || 'https://www.google.com');
           setShowBrowser(true);
           setShowResourceHub(false);
           setShowWhiteboard(false);
           setShowImageViewer(false);
           setShowAttendanceLogger(false);
+          setShowSeatingChart(false);
+          setShowPDFViewer(false);
         }}
         onShowTimer={() => {
           setShowTimer(true);
@@ -383,6 +449,16 @@ function App() {
           setShowBrowser(false);
           setShowImageViewer(false);
           setShowAttendanceLogger(false);
+          setShowSeatingChart(false);
+        }}
+        onShowSeatingChart={() => {
+          setShowSeatingChart(true);
+          setShowResourceHub(false);
+          setShowWhiteboard(false);
+          setShowBrowser(false);
+          setShowImageViewer(false);
+          setShowAttendanceLogger(false);
+          setShowTimer(false);
         }}
       />
 
@@ -404,6 +480,7 @@ function App() {
               selectedSection={selectedSection}
               onClose={() => setShowResourceHub(false)}
               onOpenImage={handleOpenImage}
+              onOpenPDF={handleOpenPDF}
             />
           </PageTransition>
         )}
@@ -417,6 +494,7 @@ function App() {
         {!showResourceHub && !showWhiteboard && showBrowser && (
           <PageTransition key="browser" className="z-[100]">
             <Browser
+              initialUrl={browserUrl}
               onClose={() => setShowBrowser(false)}
             />
           </PageTransition>
@@ -430,7 +508,15 @@ function App() {
             />
           </PageTransition>
         )}
-        {!showResourceHub && !showWhiteboard && !showBrowser && !showImageViewer && showAttendanceLogger && (
+        {!showResourceHub && !showWhiteboard && !showBrowser && !showImageViewer && showPDFViewer && selectedPDF && (
+          <PageTransition key="pdf-viewer" className="z-[100]">
+            <PDFViewer
+              fileUrl={selectedPDF}
+              onClose={() => setShowPDFViewer(false)}
+            />
+          </PageTransition>
+        )}
+        {!showResourceHub && !showWhiteboard && !showBrowser && !showImageViewer && !showPDFViewer && showAttendanceLogger && (
           <PageTransition key="attendance-logger" className="z-[100]">
             <AttendanceLogger
               selectedSection={selectedSection}
@@ -442,6 +528,14 @@ function App() {
           <PageTransition key="timer" className="z-[100]">
             <Timer
               onClose={() => setShowTimer(false)}
+            />
+          </PageTransition>
+        )}
+        {!showResourceHub && !showWhiteboard && !showBrowser && !showImageViewer && !showAttendanceLogger && !showTimer && showSeatingChart && (
+          <PageTransition key="seating-chart" className="z-[100]">
+            <SeatingChartBuilder
+              selectedSection={selectedSection}
+              onClose={() => setShowSeatingChart(false)}
             />
           </PageTransition>
         )}

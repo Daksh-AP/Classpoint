@@ -46,3 +46,8 @@ logs/
 
 # Vercel
 .vercel
+
+# Secrets
+classpoint-2-firebase-adminsdk-fbsvc-301e7f4908.json
+*.pem
+*.key

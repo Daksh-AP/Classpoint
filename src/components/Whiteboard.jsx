@@ -265,7 +265,7 @@ const Whiteboard = ({ onClose }) => {
     const handleTouchStart = (e) => {
         if (e.touches.length !== 1) return; // Only handle single touch
         e.preventDefault();
-        
+
         const { x, y } = getTouchCoordinates(e);
 
         if (tool === 'pan') {
@@ -412,13 +412,31 @@ const Whiteboard = ({ onClose }) => {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
+        // Lock body scroll
+        document.body.style.overflow = 'hidden';
+
+        // Prevent default touch actions (scrolling/zooming) on the canvas
+        canvas.style.touchAction = 'none';
+
         const handleResize = () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             setCamera(prev => ({ ...prev }));
         };
+
+        // Prevent default wheel behavior (browser zoom/scroll)
+        const preventWheel = (e) => {
+            e.preventDefault();
+        };
+
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        canvas.addEventListener('wheel', preventWheel, { passive: false });
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            if (canvas) canvas.removeEventListener('wheel', preventWheel);
+            document.body.style.overflow = ''; // Restore body scroll
+        };
     }, []);
 
     const colors = ['#000000', '#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899'];
@@ -436,6 +454,7 @@ const Whiteboard = ({ onClose }) => {
                 onTouchEnd={handleTouchEnd}
                 onWheel={handleWheel}
                 className={`absolute inset-0 ${tool === 'pan' ? 'cursor-grab active:cursor-grabbing' : 'cursor-crosshair'}`}
+                style={{ touchAction: 'none' }}
             />
 
             {/* Text Editing Overlay */}
@@ -528,17 +547,8 @@ const Whiteboard = ({ onClose }) => {
 
             {/* Toolbar Container */}
             <div
-                className={`fixed bottom-0 left-1/2 transform -translate-x-1/2 flex flex-col items-center transition-transform duration-300 ease-in-out z-50 ${isToolbarOpen ? 'translate-y-[-2rem]' : 'translate-y-[calc(100%-2.5rem)]'}`}
+                className={`fixed top-0 left-1/2 transform -translate-x-1/2 flex flex-col items-center transition-transform duration-300 ease-in-out z-50 ${isToolbarOpen ? 'translate-y-4' : 'translate-y-[calc(-100%+3rem)]'}`}
             >
-                {/* Toggle Handle */}
-                <button
-                    onClick={() => setIsToolbarOpen(!isToolbarOpen)}
-                    className="p-2 rounded-t-xl bg-black/80 backdrop-blur-md border-t border-x border-white/10 text-white hover:bg-black transition-colors shadow-lg mb-2"
-                    title={isToolbarOpen ? "Minimize Toolbar" : "Show Toolbar"}
-                >
-                    {isToolbarOpen ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
-                </button>
-
                 {/* Main Toolbar */}
                 <div className="glass-card p-4 flex flex-col gap-4">
 
@@ -661,6 +671,15 @@ const Whiteboard = ({ onClose }) => {
                     </div>
 
                 </div>
+
+                {/* Toggle Handle (Moved to bottom of toolbar) */}
+                <button
+                    onClick={() => setIsToolbarOpen(!isToolbarOpen)}
+                    className="p-2 rounded-b-xl bg-black/80 backdrop-blur-md border-b border-x border-white/10 text-white hover:bg-black transition-colors shadow-lg mt-2"
+                    title={isToolbarOpen ? "Minimize Toolbar" : "Show Toolbar"}
+                >
+                    {isToolbarOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                </button>
             </div>
 
             {/* Close Button */}

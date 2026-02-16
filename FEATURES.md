@@ -25,12 +25,12 @@
 - **Visual Indicators**: Current, upcoming, and past class styling
 
 ### 4. Desktop Widget
+- **Refactored Overlay**: Ultra-compact 350x200px widget
+- **Neo-Glass UI**: Premium frosted glass aesthetic with animations
+- **Focused View**: Displays essential "Now" and "Up Next" info
+- **Synced State**: Dashboard eye icon updates on widget close
+- **Menu-Free**: Clean, toolbar-free experience
 - **Always-on-Top**: Persistent desktop presence
-- **Compact Design**: 300x400px glass-effect widget
-- **Live Updates**: Real-time schedule information
-- **Minimizable**: Collapsible to small icon
-- **Draggable**: Repositionable on screen
-- **Auto-positioning**: Smart default placement
 
 ### 5. Class Reminders
 - **2-Minute Alerts**: Configurable reminder timing (1, 2, 5, 10 minutes)

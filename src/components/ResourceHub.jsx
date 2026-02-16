@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Folder, FileText, Image, File, Plus, Trash2, Download, ExternalLink, Search, X } from 'lucide-react';
 
-const ResourceHub = ({ selectedSection, onClose, onOpenImage }) => {
+const ResourceHub = ({ selectedSection, onClose, onOpenImage, onOpenPDF }) => {
   const [files, setFiles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const fileInputRef = useRef(null);
@@ -122,9 +122,21 @@ const ResourceHub = ({ selectedSection, onClose, onOpenImage }) => {
       return;
     }
 
+    const lowerPath = filePath.toLowerCase();
+    const isImage = (fileType && fileType.startsWith('image/')) ||
+      /\.(jpg|jpeg|png|gif|webp|bmp)$/.test(lowerPath);
+    const isPDF = (fileType === 'application/pdf') ||
+      /\.pdf$/.test(lowerPath);
+
     // Check if it's an image
-    if (fileType && fileType.startsWith('image/') && onOpenImage) {
+    if (isImage && onOpenImage) {
       onOpenImage(filePath);
+      return;
+    }
+
+    // Check if it's a PDF
+    if (isPDF && onOpenPDF) {
+      onOpenPDF(filePath);
       return;
     }
 
@@ -145,9 +157,18 @@ const ResourceHub = ({ selectedSection, onClose, onOpenImage }) => {
     }
   };
 
-  const getFileIcon = (fileType) => {
-    if (fileType.startsWith('image/')) return <Image className="w-5 h-5 text-primary-500" />;
-    if (fileType === 'application/pdf') return <FileText className="w-5 h-5 text-red-500" />;
+  const getFileIcon = (file, fileType) => {
+    // Fallback to name if file object passed, or handling legacy signature
+    const name = file.name || '';
+    const type = file.type || fileType || '';
+    const lowerName = name.toLowerCase();
+
+    if (type.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp)$/.test(lowerName)) {
+      return <Image className="w-5 h-5 text-primary-500" />;
+    }
+    if (type === 'application/pdf' || /\.pdf$/.test(lowerName)) {
+      return <FileText className="w-5 h-5 text-red-500" />;
+    }
     return <File className="w-5 h-5 text-gray-500" />;
   };
 
@@ -233,7 +254,7 @@ const ResourceHub = ({ selectedSection, onClose, onOpenImage }) => {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="p-3 rounded-lg bg-white/5">
-                        {getFileIcon(file.type)}
+                        {getFileIcon(file)}
                       </div>
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button

@@ -44,7 +44,6 @@ export default function AttendanceDashboard({ year, month, student, onClose, sel
                             if (status === 'absent') absent++;
                             if (status === 'late') {
                                 late++;
-                                present++; // Late counts as present usually, or we can keep separate
                             }
                         } else if (!student) {
                             // Class report logic (aggregate)
@@ -54,7 +53,6 @@ export default function AttendanceDashboard({ year, month, student, onClose, sel
                                 if (status === 'absent') absent++;
                                 if (status === 'late') {
                                     late++;
-                                    present++;
                                 }
                             });
                         }
@@ -140,7 +138,7 @@ export default function AttendanceDashboard({ year, month, student, onClose, sel
                                             strokeDasharray={440}
                                             strokeDashoffset={440 - (440 * attendanceRate) / 100}
                                             className={`transition-all duration-1000 ease-out ${attendanceRate >= 90 ? 'text-green-500' :
-                                                    attendanceRate >= 75 ? 'text-yellow-500' : 'text-red-500'
+                                                attendanceRate >= 75 ? 'text-yellow-500' : 'text-red-500'
                                                 }`}
                                             strokeLinecap="round"
                                         />

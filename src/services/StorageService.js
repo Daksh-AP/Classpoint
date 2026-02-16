@@ -195,6 +195,7 @@ export class StorageService {
     }
   }
 
+  // Old method (User-specific)
   static async getStudents(sectionId) {
     const user = auth.currentUser;
     if (!user) return [];
@@ -205,6 +206,49 @@ export class StorageService {
     } catch (error) {
       console.error('🔥 Failed to load students data from Firestore:', error);
       return [];
+    }
+  }
+
+  // New method (School-wide / Attendance Logger specific)
+  static async getSchoolStudents(section) {
+    if (!section || !section.grade || !section.id) return [];
+    const { collection, query, orderBy, getDocs } = await import('firebase/firestore');
+
+    try {
+      const studentsPath = `schoolData/grades/gradesList/${section.grade}/sections/${section.id}/students`;
+      const studentsRef = collection(db, studentsPath);
+      const q = query(studentsRef, orderBy('name'));
+      const querySnapshot = await getDocs(q);
+
+      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+      console.error('🔥 Failed to load school students from Firestore:', error);
+      return [];
+    }
+  }
+
+  // Seating Chart Management (Now with Firestore)
+  static async saveSeatingChart(sectionId, layout) {
+    const user = auth.currentUser;
+    if (!user) return;
+    try {
+      const chartRef = doc(db, 'users', user.uid, 'seating_charts', sectionId);
+      await setDoc(chartRef, { layout });
+    } catch (error) {
+      console.error('🔥 Failed to save seating chart to Firestore:', error);
+    }
+  }
+
+  static async getSeatingChart(sectionId) {
+    const user = auth.currentUser;
+    if (!user) return null;
+    try {
+      const chartRef = doc(db, 'users', user.uid, 'seating_charts', sectionId);
+      const docSnap = await getDoc(chartRef);
+      return docSnap.exists() ? docSnap.data().layout : null;
+    } catch (error) {
+      console.error('🔥 Failed to load seating chart from Firestore:', error);
+      return null;
     }
   }
 

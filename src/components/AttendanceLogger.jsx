@@ -31,6 +31,7 @@ export default function AttendanceLogger({ year = new Date().getFullYear(), mont
     // Student management state
     const [isEditingStudents, setIsEditingStudents] = useState(false);
     const [newStudentName, setNewStudentName] = useState('');
+    const [filter, setFilter] = useState('all'); // 'all', 'present', 'absent', 'late', 'unmarked'
 
     const monthDays = getMonthDays(currentYear, currentMonth);
 
@@ -51,6 +52,31 @@ export default function AttendanceLogger({ year = new Date().getFullYear(), mont
 
         return () => unsubscribe();
     }, [selectedSection]);
+
+    useEffect(() => {
+        if (selectedDate) {
+            const dateKey = selectedDate.toISOString().split('T')[0];
+            const el = document.getElementById(`date-${dateKey}`);
+            const container = document.getElementById('date-scroll-container');
+            if (el && container) {
+                const containerWidth = container.offsetWidth;
+                const elLeft = el.offsetLeft;
+                const elWidth = el.offsetWidth;
+
+                // Calculate center position
+                // We want: elLeft - scrollLeft = (containerWidth / 2) - (elWidth / 2)
+                // So: scrollLeft = elLeft - (containerWidth / 2) + (elWidth / 2)
+
+                // Adjust for container's own offsetParent if needed, but usually offsetLeft is relative to parent
+                // if parent is positioned.
+
+                container.scrollTo({
+                    left: elLeft - containerWidth / 2 + elWidth / 2,
+                    behavior: 'smooth'
+                });
+            }
+        }
+    }, [selectedDate, currentMonth]); // Re-run when date or month changes
 
     // Fetch records when a date is selected
     useEffect(() => {
@@ -83,7 +109,7 @@ export default function AttendanceLogger({ year = new Date().getFullYear(), mont
         if (!selectedDate || !selectedSection?.grade || !selectedSection?.id) return;
 
         const dateKey = selectedDate.toISOString().split('T')[0];
-        const finalStatus = status === 'late' ? 'present' : status;
+        const finalStatus = status;
 
         // Optimistic update
         setRecords(prev => ({ ...prev, [studentId]: finalStatus }));
@@ -333,23 +359,28 @@ export default function AttendanceLogger({ year = new Date().getFullYear(), mont
 
                         <div className="h-8 w-px bg-white/10 mx-2" />
 
-                        <div className="flex-1 overflow-x-auto custom-scrollbar flex gap-2 pb-2">
+                        <div className="flex-1 overflow-x-auto custom-scrollbar flex items-center gap-6 px-4 pb-2 relative" id="date-scroll-container">
                             {monthDays.map(d => {
                                 const isSelected = selectedDate && d.toDateString() === selectedDate.toDateString();
                                 const isToday = d.toDateString() === new Date().toDateString();
                                 return (
                                     <button
                                         key={d.toISOString()}
+                                        id={`date-${d.toISOString().split('T')[0]}`}
                                         onClick={() => setSelectedDate(d)}
-                                        className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all border ${isSelected
-                                            ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20'
-                                            : isToday
-                                                ? 'bg-white/10 border-white/20 text-white hover:bg-white/15'
-                                                : 'bg-transparent border-transparent text-gray-400 hover:bg-white/5 hover:text-gray-200'
+                                        className={`flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-xl transition-all duration-300 ${isSelected
+                                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 scale-110'
+                                                : isToday
+                                                    ? 'bg-white/5 text-blue-200'
+                                                    : 'text-slate-400 hover:text-white hover:bg-white/5'
                                             }`}
                                     >
-                                        <div className="text-xs opacity-60 mb-0.5">{d.toLocaleDateString(undefined, { weekday: 'short' })}</div>
-                                        <div className="text-lg leading-none">{d.getDate()}</div>
+                                        <div className={`text-xs font-medium mb-1 ${isSelected ? 'text-blue-100' : 'opacity-60'}`}>
+                                            {d.toLocaleDateString(undefined, { weekday: 'short' })}
+                                        </div>
+                                        <div className={`text-xl font-bold leading-none ${isSelected ? 'text-white' : ''}`}>
+                                            {d.getDate()}
+                                        </div>
                                     </button>
                                 );
                             })}
@@ -383,6 +414,28 @@ export default function AttendanceLogger({ year = new Date().getFullYear(), mont
 
                         {selectedDate ? (
                             <div className="space-y-3">
+                                {/* Filter Bar */}
+                                <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
+                                    {[
+                                        { id: 'all', label: 'All Students' },
+                                        { id: 'present', label: 'Present', color: 'bg-green-500/20 text-green-400' },
+                                        { id: 'absent', label: 'Absent', color: 'bg-red-500/20 text-red-400' },
+                                        { id: 'late', label: 'Late', color: 'bg-yellow-500/20 text-yellow-400' },
+                                        { id: 'unmarked', label: 'Unmarked', color: 'bg-gray-500/20 text-gray-400' }
+                                    ].map(f => (
+                                        <button
+                                            key={f.id}
+                                            onClick={() => setFilter(f.id)}
+                                            className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all border ${filter === f.id
+                                                ? (f.color ? `${f.color} border-${f.color.split(' ')[1].replace('text-', '')}/50 shadow-sm` : 'bg-white text-black border-white')
+                                                : 'bg-white/5 border-transparent text-gray-400 hover:bg-white/10 hover:text-white'
+                                                }`}
+                                        >
+                                            {f.label}
+                                        </button>
+                                    ))}
+                                </div>
+
                                 {loading ? (
                                     <div className="flex flex-col items-center justify-center py-20 text-gray-500">
                                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4"></div>
@@ -394,82 +447,89 @@ export default function AttendanceLogger({ year = new Date().getFullYear(), mont
                                         {isEditingStudents && <div className="mt-2 text-sm text-blue-400">Add some students above!</div>}
                                     </div>
                                 ) : (
-                                    students.map(s => {
-                                        const status = records[s.id];
-                                        return (
-                                            <div key={s.id} className="group flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-xl hover:border-white/10 hover:bg-white/[0.07] transition-all">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/20">
-                                                        {s.name.charAt(0)}
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-medium text-white text-lg">{s.name}</div>
-                                                        <div className="text-xs text-gray-500 flex items-center gap-1">
-                                                            <User className="w-3 h-3" />
-                                                            ID: {s.id.slice(0, 6)}...
+                                    students
+                                        .filter(s => {
+                                            if (filter === 'all') return true;
+                                            const status = records[s.id];
+                                            if (filter === 'unmarked') return !status;
+                                            return status === filter;
+                                        })
+                                        .map(s => {
+                                            const status = records[s.id];
+                                            return (
+                                                <div key={s.id} className="group flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-xl hover:border-white/10 hover:bg-white/[0.07] transition-all">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/20">
+                                                            {s.name.charAt(0)}
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-medium text-white text-lg">{s.name}</div>
+                                                            <div className="text-xs text-gray-500 flex items-center gap-1">
+                                                                <User className="w-3 h-3" />
+                                                                ID: {s.id.slice(0, 6)}...
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
 
-                                                <div className="flex items-center gap-4">
-                                                    {isEditingStudents ? (
-                                                        <button
-                                                            onClick={() => handleRemoveStudent(s.id)}
-                                                            className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-colors"
-                                                            title="Remove Student"
-                                                        >
-                                                            <Trash2 className="w-5 h-5" />
-                                                        </button>
-                                                    ) : (
-                                                        <>
-                                                            <div className="flex bg-black/30 rounded-lg p-1 border border-white/5">
-                                                                <button
-                                                                    onClick={() => handleMark(s.id, 'present')}
-                                                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all ${status === 'present'
-                                                                        ? 'bg-green-500/20 text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.1)]'
-                                                                        : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
-                                                                        }`}
-                                                                >
-                                                                    <Check className="w-4 h-4" />
-                                                                    Present
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleMark(s.id, 'absent')}
-                                                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all ${status === 'absent'
-                                                                        ? 'bg-red-500/20 text-red-400 shadow-[0_0_10px_rgba(239,68,68,0.1)]'
-                                                                        : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
-                                                                        }`}
-                                                                >
-                                                                    <XCircle className="w-4 h-4" />
-                                                                    Absent
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleMark(s.id, 'late')}
-                                                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all ${status === 'late'
-                                                                        ? 'bg-yellow-500/20 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.1)]'
-                                                                        : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
-                                                                        }`}
-                                                                >
-                                                                    <Clock className="w-4 h-4" />
-                                                                    Late
-                                                                </button>
-                                                            </div>
-
-                                                            <div className="h-8 w-px bg-white/10" />
-
+                                                    <div className="flex items-center gap-4">
+                                                        {isEditingStudents ? (
                                                             <button
-                                                                onClick={() => setDashboardStudent(s)}
-                                                                className="p-2.5 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all group-hover:opacity-100 opacity-60"
-                                                                title="View Analytics"
+                                                                onClick={() => handleRemoveStudent(s.id)}
+                                                                className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-colors"
+                                                                title="Remove Student"
                                                             >
-                                                                <BarChart2 className="w-5 h-5" />
+                                                                <Trash2 className="w-5 h-5" />
                                                             </button>
-                                                        </>
-                                                    )}
+                                                        ) : (
+                                                            <>
+                                                                <div className="flex bg-black/30 rounded-lg p-1 border border-white/5">
+                                                                    <button
+                                                                        onClick={() => handleMark(s.id, 'present')}
+                                                                        className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all ${status === 'present'
+                                                                            ? 'bg-green-500/20 text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.1)]'
+                                                                            : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                                                                            }`}
+                                                                    >
+                                                                        <Check className="w-4 h-4" />
+                                                                        Present
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleMark(s.id, 'absent')}
+                                                                        className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all ${status === 'absent'
+                                                                            ? 'bg-red-500/20 text-red-400 shadow-[0_0_10px_rgba(239,68,68,0.1)]'
+                                                                            : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                                                                            }`}
+                                                                    >
+                                                                        <XCircle className="w-4 h-4" />
+                                                                        Absent
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleMark(s.id, 'late')}
+                                                                        className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all ${status === 'late'
+                                                                            ? 'bg-yellow-500/20 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.1)]'
+                                                                            : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                                                                            }`}
+                                                                    >
+                                                                        <Clock className="w-4 h-4" />
+                                                                        Late
+                                                                    </button>
+                                                                </div>
+
+                                                                <div className="h-8 w-px bg-white/10" />
+
+                                                                <button
+                                                                    onClick={() => setDashboardStudent(s)}
+                                                                    className="p-2.5 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all group-hover:opacity-100 opacity-60"
+                                                                    title="View Analytics"
+                                                                >
+                                                                    <BarChart2 className="w-5 h-5" />
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    })
+                                            );
+                                        })
                                 )}
                             </div>
                         ) : (
