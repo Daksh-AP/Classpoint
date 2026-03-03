@@ -30,6 +30,7 @@ import TimetableDisplay from './TimetableDisplay.jsx';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { doc, onSnapshot, setDoc, collection, query, where } from 'firebase/firestore';
 import { db } from '../firebase.js';
+import AnnouncementBanner from './AnnouncementBanner.jsx';
 
 const MainDashboard = ({
   selectedSection,
@@ -185,6 +186,7 @@ const MainDashboard = ({
 
   return (
     <div className="min-h-screen text-slate-200 relative overflow-hidden">
+      <AnnouncementBanner classId={selectedSection?.id} />
       {/* Background Blobs - Optimized */}
       {/* Background Blobs - Optimized (Static) */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">

@@ -7,13 +7,11 @@ import SettingsModal from './components/SettingsModal.jsx';
 import SlideOutMenu from './components/SlideOutMenu.jsx';
 import ResourceHub from './components/ResourceHub.jsx';
 import Whiteboard from './components/Whiteboard.jsx';
-import WhiteboardOverlay from './components/WhiteboardOverlay.jsx';
 import Browser from './components/Browser.jsx';
 import ImageViewer from './components/ImageViewer.jsx';
 import PDFViewer from './components/PDFViewer.jsx';
 import AttendanceLogger from './components/AttendanceLogger.jsx';
 import Timer from './components/Timer.jsx';
-import SeatingChartBuilder from './components/SeatingChartBuilder.jsx';
 import { db, getDoc } from './firebase.js';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { auth } from './firebase.js';
@@ -42,7 +40,6 @@ function App() {
   const [showBrowser, setShowBrowser] = useState(false);
   const [browserUrl, setBrowserUrl] = useState('https://www.google.com'); // Default URL
   const [showTimer, setShowTimer] = useState(false);
-  const [showSeatingChart, setShowSeatingChart] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [showPDFViewer, setShowPDFViewer] = useState(false);
@@ -228,7 +225,6 @@ function App() {
     setShowWhiteboard(false);
     setShowBrowser(false);
     setShowTimer(false);
-    setShowSeatingChart(false);
     setShowAttendanceLogger(false);
   }, []);
 
@@ -239,7 +235,6 @@ function App() {
     setShowWhiteboard(false);
     setShowBrowser(false);
     setShowTimer(false);
-    setShowSeatingChart(false);
     setShowAttendanceLogger(false);
     setShowImageViewer(false);
   }, []);
@@ -355,7 +350,6 @@ function App() {
           setShowBrowser(false);
           setShowImageViewer(false);
           setShowAttendanceLogger(false);
-          setShowSeatingChart(false);
           setShowPDFViewer(false);
         }}
         onShowAttendanceLogger={() => {
@@ -365,7 +359,6 @@ function App() {
           setShowBrowser(false);
           setShowTimer(false);
           setShowImageViewer(false);
-          setShowSeatingChart(false);
         }}
         onShowWhiteboard={() => {
           setShowWhiteboard(true);
@@ -373,7 +366,6 @@ function App() {
           setShowBrowser(false);
           setShowImageViewer(false);
           setShowAttendanceLogger(false);
-          setShowSeatingChart(false);
           setShowPDFViewer(false);
         }}
         onShowBrowser={() => {
@@ -383,7 +375,6 @@ function App() {
           setShowImageViewer(false);
           setShowAttendanceLogger(false);
           onShowAttendanceLogger(false);
-          setShowSeatingChart(false);
         }}
         onShowTimer={() => {
           setShowTimer(true);
@@ -392,17 +383,7 @@ function App() {
           setShowBrowser(false);
           setShowImageViewer(false);
           setShowAttendanceLogger(false);
-          setShowSeatingChart(false);
           setShowPDFViewer(false);
-        }}
-        onShowSeatingChart={() => {
-          setShowSeatingChart(true);
-          setShowResourceHub(false);
-          setShowWhiteboard(false);
-          setShowBrowser(false);
-          setShowImageViewer(false);
-          setShowAttendanceLogger(false);
-          setShowTimer(false);
         }}
       />
 
@@ -420,7 +401,6 @@ function App() {
           setShowBrowser(false);
           setShowImageViewer(false);
           setShowAttendanceLogger(false);
-          setShowSeatingChart(false);
           setShowPDFViewer(false);
         }}
         onShowWhiteboard={() => {
@@ -429,7 +409,6 @@ function App() {
           setShowBrowser(false);
           setShowImageViewer(false);
           setShowAttendanceLogger(false);
-          setShowSeatingChart(false);
           setShowPDFViewer(false);
         }}
         onShowBrowser={(url) => {
@@ -439,7 +418,6 @@ function App() {
           setShowWhiteboard(false);
           setShowImageViewer(false);
           setShowAttendanceLogger(false);
-          setShowSeatingChart(false);
           setShowPDFViewer(false);
         }}
         onShowTimer={() => {
@@ -449,16 +427,6 @@ function App() {
           setShowBrowser(false);
           setShowImageViewer(false);
           setShowAttendanceLogger(false);
-          setShowSeatingChart(false);
-        }}
-        onShowSeatingChart={() => {
-          setShowSeatingChart(true);
-          setShowResourceHub(false);
-          setShowWhiteboard(false);
-          setShowBrowser(false);
-          setShowImageViewer(false);
-          setShowAttendanceLogger(false);
-          setShowTimer(false);
         }}
       />
 

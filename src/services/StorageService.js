@@ -227,30 +227,7 @@ export class StorageService {
     }
   }
 
-  // Seating Chart Management (Now with Firestore)
-  static async saveSeatingChart(sectionId, layout) {
-    const user = auth.currentUser;
-    if (!user) return;
-    try {
-      const chartRef = doc(db, 'users', user.uid, 'seating_charts', sectionId);
-      await setDoc(chartRef, { layout });
-    } catch (error) {
-      console.error('🔥 Failed to save seating chart to Firestore:', error);
-    }
-  }
 
-  static async getSeatingChart(sectionId) {
-    const user = auth.currentUser;
-    if (!user) return null;
-    try {
-      const chartRef = doc(db, 'users', user.uid, 'seating_charts', sectionId);
-      const docSnap = await getDoc(chartRef);
-      return docSnap.exists() ? docSnap.data().layout : null;
-    } catch (error) {
-      console.error('🔥 Failed to load seating chart from Firestore:', error);
-      return null;
-    }
-  }
 
   // Clear all data
   static clearAllData() {
