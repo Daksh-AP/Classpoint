@@ -117,7 +117,6 @@
                 ClassPoint</h1>
             <div class="flex gap-6 text-sm">
                 <a href="#features" class="text-gray-300 hover:text-white transition">Features</a>
-                <a href="#download" class="text-gray-300 hover:text-white transition">Download</a>
                 <a href="https://github.com/Windows-Concept/ClassPoint" target="_blank"
                     class="text-gray-300 hover:text-white transition">GitHub</a>
             </div>
@@ -136,15 +135,7 @@
                 Professional desktop app for teachers with attendance tracking, timetable management, resource hub, and
                 real-time notifications.
             </p>
-            <button onclick="downloadApp()"
-                class="btn text-white px-12 py-5 rounded-2xl text-lg font-semibold inline-flex items-center gap-3">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 10v6m0 0l-4-4m4 4l4-4m6 5a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                Download ClassPoint Installer
-            </button>
-            <p class="text-gray-400 mt-6 text-sm">Windows 10/11 • Easy Installer • 100% Free</p>
+
         </div>
     </section>
 
@@ -233,24 +224,7 @@
         </div>
     </section>
 
-    <section id="download" class="relative z-10 py-20 px-6">
-        <div class="max-w-4xl mx-auto">
-            <div class="glass p-12 text-center">
-                <div class="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10">
-                        </path>
-                    </svg>
-                </div>
-                <h3 class="text-4xl font-bold mb-4 text-white">Ready to Get Started?</h3>
-                <p class="text-gray-300 mb-8 text-lg">Download ClassPoint and transform your class management.</p>
-                <button onclick="downloadApp()" class="btn text-white px-16 py-6 rounded-2xl text-xl font-bold">Download
-                    Now</button>
-                <p class="text-gray-400 mt-6 text-sm">Run installer • Follow setup • Start managing classes!</p>
-            </div>
-        </div>
-    </section>
+
 
     <footer class="relative z-10 py-12 mt-20">
         <div class="max-w-7xl mx-auto px-6">
@@ -261,7 +235,6 @@
                 <p class="text-gray-400 mb-6">Smart Class Management Made Simple</p>
                 <div class="flex justify-center gap-6 text-sm text-gray-400">
                     <a href="#features" class="hover:text-white transition">Features</a>
-                    <a href="#download" class="hover:text-white transition">Download</a>
                     <a href="https://github.com/Windows-Concept/ClassPoint" target="_blank"
                         class="hover:text-white transition">GitHub</a>
                 </div>
@@ -273,18 +246,7 @@
     </footer>
 
     <script>
-        function downloadApp() {
-            // Google Drive direct download link
-            const installerUrl = 'https://drive.google.com/file/d/1IGTIz1jkK-iulqy7zAKaG-U0LKgEcvQX/view?usp=sharing';
 
-            // Open download in new tab
-            window.open(installerUrl, '_blank');
-
-            // Show success message
-            setTimeout(() => {
-                alert('📥 Download Started!\n\n✅ ClassPoint Setup 1.0.0.exe\n✅ Run the installer\n✅ Follow the setup wizard\n✅ Start managing your classes!');
-            }, 500);
-        }
 
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
