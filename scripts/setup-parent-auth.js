@@ -17,7 +17,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const email = 'ppg2744@parent.classora.com';
+const email = 'ppg2744@parent.genatis.com';
 const password = '123456';
 const username = 'ppg2744';
 

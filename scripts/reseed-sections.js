@@ -136,7 +136,7 @@ async function run() {
     try {
         await auth.createUser({
             uid: adminUid,
-            email: 'admin@classora.com',
+            email: 'admin@genatis.com',
             password: 'password123',
             displayName: 'Principal Admin'
         });
@@ -145,9 +145,9 @@ async function run() {
             gradeAccess: ['Grade 4', 'Grade 5', 'Grade 6'],
             activeGrade: 'Grade 4',
             name: 'Principal Admin',
-            email: 'admin@classora.com'
+            email: 'admin@genatis.com'
         });
-        console.log('✅ Admin created (admin@classora.com)');
+        console.log('✅ Admin created (admin@genatis.com)');
     } catch (e) { console.error('Error creating admin:', e.message); }
 
     // Teacher
@@ -155,7 +155,7 @@ async function run() {
     try {
         await auth.createUser({
             uid: teacherUid,
-            email: 'teacher4@classora.com',
+            email: 'teacher4@genatis.com',
             password: 'password123',
             displayName: 'Mr. Smith'
         });
@@ -164,11 +164,11 @@ async function run() {
             grade: '4',
             assignedSections: ['super1', 'super2'],
             name: 'Mr. Smith',
-            email: 'teacher4@classora.com',
+            email: 'teacher4@genatis.com',
             subjects: ['Math', 'Science'],
             createdAt: admin.firestore.FieldValue.serverTimestamp()
         });
-        console.log('✅ Teacher created (teacher4@classora.com)');
+        console.log('✅ Teacher created (teacher4@genatis.com)');
     } catch (e) { console.error('Error creating teacher:', e.message); }
 
     console.log('🎉 Reseed complete!');

@@ -179,7 +179,7 @@ app.whenReady().then(() => {
 
   const handleDownload = (event, item, webContents) => {
     // Ensure the download directory exists
-    const downloadFolder = path.join(app.getPath('downloads'), 'ClassPoint');
+    const downloadFolder = path.join(app.getPath('downloads'), 'Genatis');
     if (!fs.existsSync(downloadFolder)) {
       fs.mkdirSync(downloadFolder, { recursive: true });
     }

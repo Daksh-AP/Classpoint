@@ -14,7 +14,7 @@ const auth = getAuth(app);
 
 async function createTeacher() {
   try {
-    const cred = await createUserWithEmailAndPassword(auth, 'teacher9@genatis.com', 'classora2026');
+    const cred = await createUserWithEmailAndPassword(auth, 'teacher9@genatis.com', 'genatis2026');
     await setDoc(doc(db, 'users', cred.user.uid), {
       email: 'teacher9@genatis.com',
       name: 'Grade 9 Teacher',

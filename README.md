@@ -1,6 +1,6 @@
 <div align="center">
 
-# Classora
+# Genatis
 ### Ambient Classroom Intelligence & Smartboard Operating System
 
 <img src="https://img.shields.io/badge/status-active-success?style=for-the-badge&logo=electron&logoColor=white" alt="Status">
@@ -10,7 +10,7 @@
 <br />
 <br />
 
-> **Classora** is an ambient operating system designed specifically for school interactive smartboards and classroom displays. It bridges real-time lesson continuity, automatic schedule intelligence, and instant teacher-student context synchronization across rotating periods.
+> **Genatis** is an ambient operating system designed specifically for school interactive smartboards and classroom displays. It bridges real-time lesson continuity, automatic schedule intelligence, and instant teacher-student context synchronization across rotating periods.
 
 </div>
 
@@ -18,13 +18,13 @@
 
 ---
 
-## 🌟 The Classora Ecosystem
+## 🌟 The Genatis Ecosystem
 
-Classora connects every layer of the school day into a single unified continuity graph:
+Genatis connects every layer of the school day into a single unified continuity graph:
 
 ```
                   ┌──────────────────────────────┐
-                  │    Classora Admin Console    │
+                  │    Genatis Admin Console     │
                   │ (Fleet, Rosters & Governance)│
                   └──────────────┬───────────────┘
                                  │
@@ -32,7 +32,7 @@ Classora connects every layer of the school day into a single unified continuity
          │                       │                       │
          ▼                       ▼                       ▼
 ┌─────────────────┐    ┌──────────────────┐    ┌──────────────────┐
-│ Classora Board  │    │  Classora Staff  │    │ Classora Parent  │
+│  Genatis Board  │    │  Genatis Staff   │    │  Genatis Parent  │
 │(Smartboard OS)  │◄──►│  (Teacher Mobile)│    │ (Parent Portal)  │
 └─────────────────┘    └──────────────────┘    └──────────────────┘
          ▲                                               ▲
@@ -40,10 +40,10 @@ Classora connects every layer of the school day into a single unified continuity
                      Real-Time Classroom Graph
 ```
 
-* **Classora Board (Desktop)**: The central classroom hub running on classroom smartboards, managing daily timetables, pinned classroom sections, live open loops, and contextual handovers.
-* **Classora Staff (Teacher Mobile)**: Instant period-by-period mobile command for teachers to log lesson progress, flag student confusions, record attendance, and hand over class context.
-* **Classora Parent Portal**: Real-time transparency for families, providing daily subject coverage, student attendance records, school announcements, and targeted support.
-* **Classora Admin Portal**: Institutional fleet administration, multi-grade timetable scheduling, roster synchronization, substitute delegation, and emergency broadcasts.
+* **Genatis Board (Desktop)**: The central classroom hub running on interactive smartboards, managing daily timetables, pinned classroom sections, live open loops, and contextual handovers.
+* **Genatis Staff (Teacher Mobile)**: Instant period-by-period mobile command for teachers to log lesson progress, flag student confusions, record attendance, and hand over class context.
+* **Genatis Parent Portal**: Real-time transparency for families, providing daily subject coverage, student attendance records, school announcements, and targeted support.
+* **Genatis Admin Console**: Institutional fleet administration, multi-grade timetable scheduling, roster synchronization, substitute delegation, and emergency broadcasts.
 
 <br />
 
@@ -52,16 +52,16 @@ Classora connects every layer of the school day into a single unified continuity
 ## ⚡ Core Capabilities
 
 ### 1. Subject Continuity & Live Context Handovers
-Eliminate the 10-minute transition loss when teachers swap classrooms. As soon as a teacher steps into the room, Classora automatically loads:
+Eliminates the 10-minute transition loss when teachers swap classrooms. As soon as a teacher steps into the room, Genatis automatically loads:
 * **Last Topic Covered**: Exact chapter, theorem, or unit completed in the prior session.
 * **Open Loops & Student Confusions**: Unresolved questions or misconceptions flagged by the previous teacher for immediate follow-up.
 * **Next Session Objectives**: Transparent roadmap for the incoming educator.
 
 ### 2. Student Absence Impact Intelligence
-Absences are no longer a black box. When a teacher marks a student absent, Classora matches attendance with the specific lesson topic taught during that exact period. Incoming teachers and parents receive targeted impact notifications highlighting concepts the student missed.
+Absences are no longer a black box. When a teacher marks a student absent, Genatis matches attendance with the specific lesson topic taught during that exact period. Incoming teachers and parents receive targeted impact notifications highlighting concepts the student missed.
 
 ### 3. Room-Locked Display Security
-Smartboards are physically assigned to designated classrooms (e.g., *Grade 9 Whiz 1*). Classora enforces strict section-locking on board accounts:
+Smartboards are physically assigned to designated classrooms (e.g., *Grade 9 Whiz 1*). Genatis enforces strict section-locking on board accounts:
 * Prevents students or unintended users from altering room configurations or switching classroom streams.
 * Administrative PIN-scrambled authentication protects sensitive settings, timetable edits, and contextual records.
 
@@ -91,5 +91,5 @@ Smartboards are physically assigned to designated classrooms (e.g., *Grade 9 Whi
 ---
 
 <div align="center">
-    <p><b>Classora</b> — Engineered for seamless learning continuity.</p>
+    <p><b>Genatis</b> — Engineered for seamless learning continuity.</p>
 </div>

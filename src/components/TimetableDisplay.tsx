@@ -1,6 +1,6 @@
 import React from 'react';
 import { Clock, MapPin, Calendar, Info } from 'lucide-react';
-import { TimeService } from '../services/TimeService.js';
+import { TimeService } from '../services/TimeService';
 import { getSetRotationNotice } from '../utils/timetableNormalizer';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];

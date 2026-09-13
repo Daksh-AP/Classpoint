@@ -15,10 +15,10 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 const testAccounts = [
-  { email: 'teacher9@classora.com', pass: 'password123' },
-  { email: 'admin@classora.com', pass: 'password123' },
-  { email: 'board_grade9_super1@genatis.com', pass: 'classora2026' },
-  { email: 'admin_grade9@genatis.com', pass: 'classora2026' },
+  { email: 'teacher9@genatis.com', pass: 'password123' },
+  { email: 'admin@genatis.com', pass: 'password123' },
+  { email: 'board_grade9_super1@genatis.com', pass: 'genatis2026' },
+  { email: 'admin_grade9@genatis.com', pass: 'genatis2026' },
 ];
 
 async function testAll() {

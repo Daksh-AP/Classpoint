@@ -18,7 +18,7 @@ import Timer from './components/Timer';
 import ErrorBoundary from './components/ErrorBoundary';
 import { AnimatePresence } from 'framer-motion';
 import PageTransition from './components/PageTransition';
-import GenatisSpark from './components/ClassPointSpark';
+import GenatisSpark from './components/GenatisSpark';
 import AmbientDashboard from './components/AmbientDashboard';
 import AlertOverlay from './components/AlertOverlay';
 

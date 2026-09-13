@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Genatis Classora Desktop - 80 OPS Smartboard Fleet Deployment & Hardening Script
+    Genatis Board Desktop - 80 OPS Smartboard Fleet Deployment & Hardening Script
 .DESCRIPTION
     Configures Windows 10/11 IoT Enterprise on Senses OPS modules to withstand:
     1. Deep Freeze & UWF reboot-to-restore (configures persistent ThawSpace storage).
@@ -17,7 +17,7 @@ param(
 )
 
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "  Genatis Classora - 80 OPS Smartboard Hardening Deployer " -ForegroundColor Cyan
+Write-Host "  Genatis Board - 80 OPS Smartboard Hardening Deployer   " -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 
 # 1. Ensure Administrator Rights

@@ -26,7 +26,7 @@ async function seedGoldenPath() {
         try {
             await auth.createUser({
                 uid: teacherUid,
-                email: 'teacher9@classora.com',
+                email: 'teacher9@genatis.com',
                 password: 'password123',
                 displayName: 'Mr. Smith'
             });
@@ -46,7 +46,7 @@ async function seedGoldenPath() {
             role: 'teacher',
             grade: '9',
             name: 'Mr. Smith',
-            email: 'teacher9@classora.com',
+            email: 'teacher9@genatis.com',
             subjects: ['Math', 'Science'],
             createdAt: admin.firestore.FieldValue.serverTimestamp()
         });
@@ -57,7 +57,7 @@ async function seedGoldenPath() {
         try {
             await auth.createUser({
                 uid: adminUid,
-                email: 'admin@classora.com',
+                email: 'admin@genatis.com',
                 password: 'password123',
                 displayName: 'Principal Admin'
             });
@@ -75,7 +75,7 @@ async function seedGoldenPath() {
             gradeAccess: ['Grade 8', 'Grade 9', 'Grade 10'],
             activeGrade: 'Grade 9',
             name: 'Principal Admin',
-            email: 'admin@classora.com'
+            email: 'admin@genatis.com'
         });
         console.log('✅ Created Admin Document');
 
@@ -141,7 +141,7 @@ async function seedGoldenPath() {
         try {
             await auth.createUser({
                 uid: dummyUid,
-                email: 'teacher8@classora.com',
+                email: 'teacher8@genatis.com',
                 password: 'password123',
                 displayName: 'Ms. Dummy'
             });
@@ -159,7 +159,7 @@ async function seedGoldenPath() {
             grade: '8',
             assignedSections: ['8a'],
             name: 'Ms. Dummy',
-            email: 'teacher8@classora.com',
+            email: 'teacher8@genatis.com',
             subjects: ['History'],
             createdAt: admin.firestore.FieldValue.serverTimestamp()
         });

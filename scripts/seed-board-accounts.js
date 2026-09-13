@@ -62,7 +62,7 @@ async function createBoardAccount(grade, sectionId) {
         await auth.createUser({
             uid: uid,
             email: email,
-            password: 'classora2026',
+            password: 'genatis2026',
             displayName: `Board Grade ${grade} ${sectionId}`
         });
         

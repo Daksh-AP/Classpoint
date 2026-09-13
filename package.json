@@ -1,5 +1,5 @@
 {
-    "name": "classora-board",
+    "name": "genatis-board",
     "version": "1.0.0",
     "private": true,
     "homepage": "./",
@@ -15,12 +15,11 @@
         "build:css": "tailwindcss -i ./src/index.css -o ./src/tailwind.css",
         "watch:css": "tailwindcss -i ./src/index.css -o ./src/tailwind.css --watch",
         "dist": "electron-builder",
-        "electron-build": "rimraf dist APP-win32-x64 Classora-win32-x64 && npm run build && npm run dist",
+        "electron-build": "rimraf dist APP-win32-x64 Genatis-win32-x64 && npm run build && npm run dist",
         "lint": "eslint \"src/**/*.{ts,tsx}\""
     },
     "main": "electron.cjs",
     "dependencies": {
-        "@classora/core": "*",
         "@sentry/electron": "^7.15.0",
         "@sentry/react": "^10.67.0",
         "@tanstack/react-query": "^5.101.4",
@@ -68,8 +67,8 @@
         "postcss": "^8.5.6"
     },
     "build": {
-        "appId": "com.classora.app",
-        "productName": "Classora",
+        "appId": "com.genatis.app",
+        "productName": "Genatis",
         "asar": false,
         "extends": "react-cra",
         "files": [
@@ -93,7 +92,7 @@
             "allowToChangeInstallationDirectory": true,
             "createDesktopShortcut": true,
             "createStartMenuShortcut": true,
-            "shortcutName": "Classora"
+            "shortcutName": "Genatis"
         }
     },
     "browserslist": {

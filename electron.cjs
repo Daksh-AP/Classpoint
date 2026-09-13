@@ -1,4 +1,4 @@
-// Main process for Classora Electron app
+// Main process for Genatis Electron app
 if (process.env.VITE_SENTRY_DSN && process.env.VITE_SENTRY_DSN.startsWith('http')) {
   try {
     const { init } = require('@sentry/electron/main');
@@ -20,16 +20,13 @@ console.log('[MAIN] electron.cjs loaded');
 // School OPS panels running Deep Freeze or UWF restore C:\ on reboot.
 // Detect secondary persistent partitions (D:\, E:\, or designated ThawSpace) and redirect data.
 function detectPersistentRoot() {
-  const envTarget = process.env.GENATIS_DATA_DIR || process.env.CLASSORA_DATA_DIR;
+  const envTarget = process.env.GENATIS_DATA_DIR;
   if (envTarget && fs.existsSync(envTarget)) {
     return envTarget;
   }
   const candidatePaths = [
-    'D:\\ClassoraData',
     'D:\\GenatisData',
-    'E:\\ClassoraData',
     'E:\\GenatisData',
-    'C:\\ThawSpace\\ClassoraData',
     'C:\\ThawSpace\\GenatisData',
   ];
   for (const candidate of candidatePaths) {
@@ -418,7 +415,7 @@ app.whenReady().then(() => {
       fileName = `image-${Date.now()}.${ext}`;
     }
 
-    const savePath = path.join(app.getPath('downloads'), 'Classora', fileName);
+    const savePath = path.join(app.getPath('downloads'), 'Genatis', fileName);
     item.setSavePath(savePath);
 
     item.on('updated', (event, state) => {
@@ -443,7 +440,7 @@ app.whenReady().then(() => {
           try {
             console.log(`Converting ${mimeType} to JPEG...`);
             const jpegFileName = fileName.replace(/\.[^.]+$/, '.jpg');
-            const jpegPath = path.join(app.getPath('downloads'), 'Classora', jpegFileName);
+            const jpegPath = path.join(app.getPath('downloads'), 'Genatis', jpegFileName);
 
             // Read the downloaded file and convert to JPEG
             await sharp(savePath)

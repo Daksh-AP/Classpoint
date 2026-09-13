@@ -17,8 +17,8 @@ async function testRBAC() {
 
     try {
         // Test 1: Log in as Teacher 8 (Grade 8)
-        console.log("Signing in as Teacher 8 (teacher8@classora.com)...");
-        await signInWithEmailAndPassword(auth, 'teacher8@classora.com', 'password123');
+        console.log("Signing in as Teacher 8 (teacher8@genatis.com)...");
+        await signInWithEmailAndPassword(auth, 'teacher8@genatis.com', 'password123');
         console.log("✅ Successfully signed in as Teacher 8");
 
         // Attempt to write to Grade 9 section (Should FAIL)
@@ -37,8 +37,8 @@ async function testRBAC() {
         }
 
         // Test 2: Log in as Teacher 9 (Grade 9)
-        console.log("\nSigning in as Teacher 9 (teacher9@classora.com)...");
-        await signInWithEmailAndPassword(auth, 'teacher9@classora.com', 'password123');
+        console.log("\nSigning in as Teacher 9 (teacher9@genatis.com)...");
+        await signInWithEmailAndPassword(auth, 'teacher9@genatis.com', 'password123');
         console.log("✅ Successfully signed in as Teacher 9");
 
         // Attempt to write to Grade 9 section (Should SUCCEED)

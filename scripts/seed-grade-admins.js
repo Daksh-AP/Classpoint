@@ -29,7 +29,7 @@ async function run() {
             await auth.createUser({
                 uid: uid,
                 email: email,
-                password: 'classora2026',
+                password: 'genatis2026',
                 displayName: `Grade ${grade} Admin`
             });
             

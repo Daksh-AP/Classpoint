@@ -13,7 +13,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 async function getUsers() {
-  await signInWithEmailAndPassword(auth, 'admin_grade9@genatis.com', 'classora2026');
+  await signInWithEmailAndPassword(auth, 'admin_grade9@genatis.com', 'genatis2026');
   const snap = await getDocs(collection(db, 'users'));
   snap.forEach(doc => console.log(doc.id, doc.data().email, doc.data().name, doc.data().role, doc.data().grade));
   process.exit(0);
