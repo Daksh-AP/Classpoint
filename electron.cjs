@@ -1,7 +1,105 @@
-// Main process for ClassPoint Electron app
+// Main process for Classora Electron app
+if (process.env.VITE_SENTRY_DSN && process.env.VITE_SENTRY_DSN.startsWith('http')) {
+  try {
+    const { init } = require('@sentry/electron/main');
+    init({
+      dsn: process.env.VITE_SENTRY_DSN,
+    });
+  } catch (err) {
+    console.error('[SENTRY] Failed to initialize main process Sentry:', err);
+  }
+}
 const { app, BrowserWindow, ipcMain, desktopCapturer, screen } = require('electron');
 const path = require('path');
+const fs = require('fs');
+const os = require('os');
+const { execSync } = require('child_process');
 console.log('[MAIN] electron.cjs loaded');
+
+// --- Industrial OPS Hardening: ThawSpace / Persistent Partition Detection ---
+// School OPS panels running Deep Freeze or UWF restore C:\ on reboot.
+// Detect secondary persistent partitions (D:\, E:\, or designated ThawSpace) and redirect data.
+function detectPersistentRoot() {
+  const envTarget = process.env.GENATIS_DATA_DIR || process.env.CLASSORA_DATA_DIR;
+  if (envTarget && fs.existsSync(envTarget)) {
+    return envTarget;
+  }
+  const candidatePaths = [
+    'D:\\ClassoraData',
+    'D:\\GenatisData',
+    'E:\\ClassoraData',
+    'E:\\GenatisData',
+    'C:\\ThawSpace\\ClassoraData',
+    'C:\\ThawSpace\\GenatisData',
+  ];
+  for (const candidate of candidatePaths) {
+    try {
+      if (fs.existsSync(candidate)) return candidate;
+      const driveRoot = path.parse(candidate).root;
+      if (fs.existsSync(driveRoot) && driveRoot.toUpperCase() !== 'C:\\') {
+        fs.mkdirSync(candidate, { recursive: true });
+        return candidate;
+      }
+    } catch (e) {
+      // Ignore permission or drive missing errors
+    }
+  }
+  return null;
+}
+
+const persistentRoot = detectPersistentRoot();
+if (persistentRoot) {
+  try {
+    const userDataDir = path.join(persistentRoot, 'UserData');
+    const downloadsDir = path.join(persistentRoot, 'Downloads');
+    if (!fs.existsSync(userDataDir)) fs.mkdirSync(userDataDir, { recursive: true });
+    if (!fs.existsSync(downloadsDir)) fs.mkdirSync(downloadsDir, { recursive: true });
+    app.setPath('userData', userDataDir);
+    app.setPath('downloads', downloadsDir);
+    console.log(`[OPS-PERSISTENCE] Redirected user data to persistent volume: ${userDataDir}`);
+  } catch (err) {
+    console.warn('[OPS-PERSISTENCE] Failed to redirect persistent path:', err);
+  }
+}
+
+// --- Industrial OPS Hardening: Crash Sentinel Circuit ---
+// When a wall-switch hard cut occurs, deleting orphan LOCK files leaves torn MANIFEST / .ldb tables,
+// causing unhandled Chromium/Firestore startup crashes.
+// The Crash Sentinel Circuit detects unclean shutdowns and resets local LevelDB storage so the app rehydrates cleanly.
+const userDataPath = app.getPath('userData');
+const crashSentinelPath = path.join(userDataPath, '.crash_sentinel');
+
+if (fs.existsSync(crashSentinelPath)) {
+  console.warn('[OPS-RECOVERY] Abrupt power cut detected from previous session (.crash_sentinel present).');
+  console.warn('[OPS-RECOVERY] Purging potentially torn LevelDB / IndexedDB tables to prevent unhandled startup crashes...');
+  try {
+    fs.rmSync(path.join(userDataPath, 'Local Storage'), { recursive: true, force: true });
+    fs.rmSync(path.join(userDataPath, 'IndexedDB'), { recursive: true, force: true });
+    fs.rmSync(path.join(userDataPath, 'Session Storage'), { recursive: true, force: true });
+    console.log('[OPS-RECOVERY] Successfully purged torn LevelDB state. App will rehydrate cleanly from Firestore.');
+  } catch (cleanErr) {
+    console.warn('[OPS-RECOVERY] Error during crash sentinel cleanup:', cleanErr.message);
+  }
+}
+
+// Arm the sentinel for this session
+try {
+  if (!fs.existsSync(userDataPath)) fs.mkdirSync(userDataPath, { recursive: true });
+  fs.writeFileSync(crashSentinelPath, `${Date.now()}`);
+} catch (e) {
+  // Non-fatal if read-only
+}
+
+app.commandLine.appendSwitch('plugins');
+app.commandLine.appendSwitch('enable-pdf-viewer-index', '1');
+
+// 4K High-DPI & GPU Rendering on OPS modules:
+// Enable per-monitor DPI support naturally without forcing scale factor 1.0 (which caused touch coordinate drift)
+app.commandLine.appendSwitch('high-dpi-support', '1');
+app.commandLine.appendSwitch('enable-gpu-rasterization');
+app.commandLine.appendSwitch('enable-zero-copy');
+app.commandLine.appendSwitch('ignore-gpu-blocklist');
+
 const isDev = process.env.NODE_ENV === 'development' || process.defaultApp || /[\\/]electron-prebuilt[\\/]/.test(process.execPath) || /[\\/]electron[\\/]/.test(process.execPath);
 
 let mainWindow;
@@ -13,10 +111,12 @@ function createMainWindow() {
     height: 1080,
     icon: path.join(__dirname, 'public', 'icon.png'),
     webPreferences: {
+      zoomFactor: 1.0,
       nodeIntegration: true,
       contextIsolation: false,
+      preload: path.join(__dirname, 'public', 'preload.js'),
       webSecurity: !isDev,
-      webviewTag: true,
+      webviewTag: true
     },
     show: false,
   });
@@ -69,7 +169,7 @@ function createOverlayWindow() {
     transparent: true,
     frame: false,
     alwaysOnTop: true,
-    skipTaskbar: false,
+    skipTaskbar: true,
     resizable: false,
     webPreferences: {
       nodeIntegration: true,
@@ -179,10 +279,116 @@ ipcMain.on('request-widget-data', (event) => {
   }
 });
 
+// Start-on-Login / Auto-launch handlers (Windows Registry integration)
+ipcMain.handle('get-start-on-login', () => {
+  try {
+    const settings = app.getLoginItemSettings({
+      path: process.execPath,
+      args: isDev ? [path.resolve(__dirname)] : []
+    });
+    return settings.openAtLogin;
+  } catch (err) {
+    console.error('[MAIN] getLoginItemSettings error:', err);
+    return false;
+  }
+});
+
+ipcMain.on('set-start-on-login', (event, startOnLogin) => {
+  try {
+    const enable = Boolean(startOnLogin);
+    app.setLoginItemSettings({
+      openAtLogin: enable,
+      openAsHidden: false,
+      path: process.execPath,
+      args: isDev ? [path.resolve(__dirname)] : []
+    });
+    console.log(`[MAIN] Startup on login set to: ${enable}`);
+  } catch (err) {
+    console.error('[MAIN] setLoginItemSettings error:', err);
+  }
+});
+
+ipcMain.handle('save-file', async (event, { dataUrl, payloadPath }) => {
+  const fs = require('fs');
+  try {
+    const dir = path.dirname(payloadPath);
+    const ext = path.extname(payloadPath);
+    const name = path.basename(payloadPath, ext);
+    const newPath = path.join(dir, `${name}-annotated-${Date.now()}${ext}`);
+    const base64Data = dataUrl.replace(/^data:image\/\w+;base64,/, "");
+    fs.writeFileSync(newPath, base64Data, 'base64');
+    return { success: true, path: newPath };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('open-path', async (event, filePath) => {
+  const { shell } = require('electron');
+  try {
+    await shell.openPath(filePath);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+// Hardware Identity for Deep Freeze Amnesia Bypass
+ipcMain.handle('get-machine-hardware-id', async () => {
+  const hostname = os.hostname();
+  let uuid = '';
+  try {
+    uuid = execSync('powershell.exe -NoProfile -Command "(Get-CimInstance Win32_ComputerSystemProduct).UUID"', { timeout: 4000, encoding: 'utf8' }).trim();
+  } catch (e) {
+    try {
+      uuid = execSync('wmic csproduct get uuid', { timeout: 4000, encoding: 'utf8' }).replace(/UUID|\r|\n|\s/gi, '').trim();
+    } catch (e2) {
+      uuid = hostname;
+    }
+  }
+  return {
+    hostname,
+    uuid: uuid || hostname,
+    machineId: `${hostname}_${uuid || 'default'}`
+  };
+});
+
+// Dynamic Click-Through for Transparent Overlay Windows (prevents digitizer hit-barriers)
+ipcMain.on('set-ignore-mouse-events', (event, ignore, options) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) {
+    win.setIgnoreMouseEvents(Boolean(ignore), options || { forward: true });
+  }
+});
+
 app.whenReady().then(() => {
   createMainWindow();
 
   const { session } = require('electron');
+
+  // CORS Bypass Workaround for Firebase and Cloudinary
+  session.defaultSession.webRequest.onHeadersReceived(
+    { urls: [
+      'https://firebasestorage.googleapis.com/*',
+      'https://res.cloudinary.com/*'
+    ] },
+    (details, callback) => {
+      const responseHeaders = { ...details.responseHeaders };
+      
+      // Inject headers to bypass browser CORS checks and force inline viewing
+      responseHeaders['Access-Control-Allow-Origin'] = ['*'];
+      responseHeaders['Content-Security-Policy'] = ["default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';"];
+      
+      // Force inline for Cloudinary/Firebase PDFs to prevent black screens/downloads
+      if (details.url.toLowerCase().endsWith('.pdf')) {
+        responseHeaders['Content-Disposition'] = ['inline'];
+        responseHeaders['Content-Type'] = ['application/pdf'];
+      }
+
+      callback({ responseHeaders });
+    }
+  );
+
   const sharp = require('sharp');
   const fs = require('fs').promises;
 
@@ -212,7 +418,7 @@ app.whenReady().then(() => {
       fileName = `image-${Date.now()}.${ext}`;
     }
 
-    const savePath = path.join(app.getPath('downloads'), 'ClassPoint', fileName);
+    const savePath = path.join(app.getPath('downloads'), 'Classora', fileName);
     item.setSavePath(savePath);
 
     item.on('updated', (event, state) => {
@@ -237,7 +443,7 @@ app.whenReady().then(() => {
           try {
             console.log(`Converting ${mimeType} to JPEG...`);
             const jpegFileName = fileName.replace(/\.[^.]+$/, '.jpg');
-            const jpegPath = path.join(app.getPath('downloads'), 'ClassPoint', jpegFileName);
+            const jpegPath = path.join(app.getPath('downloads'), 'Classora', jpegFileName);
 
             // Read the downloaded file and convert to JPEG
             await sharp(savePath)
@@ -280,4 +486,17 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('will-quit', () => {
+  try {
+    const userData = app.getPath('userData');
+    const sentinel = path.join(userData, '.crash_sentinel');
+    if (fs.existsSync(sentinel)) {
+      fs.unlinkSync(sentinel);
+      console.log('[OPS-RECOVERY] Clean shutdown confirmed. Crash sentinel removed.');
+    }
+  } catch (e) {
+    // Ignore cleanup error on quit
+  }
 });

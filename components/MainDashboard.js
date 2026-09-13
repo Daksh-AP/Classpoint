@@ -9,25 +9,35 @@ import {
   RefreshCw,
   BookOpen,
   MapPin,
-  Cloud
+  Cloud,
+  Edit2,
+  LogOut,
+  BarChart2
 } from 'lucide-react';
+import ManualTimetableEntry from './ManualTimetableEntry';
 import SettingsModal from './SettingsModal';
+import TimetableDisplay from './TimetableDisplay';
 import { TimeService } from '../services/TimeService';
 import { NotificationService } from '../services/NotificationService';
 import { StorageService } from '../services/StorageService';
-import { generateDemoTimetable } from '../utils/DemoData';
+import AttendanceDashboard from './AttendanceDashboard';
 
 const MainDashboard = ({ 
   selectedSection, 
   timetableData, 
-  onTimetableUpload, 
-  onSectionChange 
+  onTimetableUpdate, 
+  onSectionChange,
+  onSettingsChange,
+  currentUser,
+  onSignOut
 }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [widgetVisible, setWidgetVisible] = useState(false);
   const [currentClass, setCurrentClass] = useState(null);
   const [nextClass, setNextClass] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showScheduleEditor, setShowScheduleEditor] = useState(false);
+  const [showAttendanceReports, setShowAttendanceReports] = useState(false);
   const [settings, setSettings] = useState(StorageService.getSettings());
   const [lastReminderTime, setLastReminderTime] = useState(null);
 
@@ -75,16 +85,6 @@ const MainDashboard = ({
     }
   };
 
-  const openQuickdrop = () => {
-    if (window.require) {
-      const { shell } = window.require('electron');
-      shell.openExternal('https://quickdrop-drab.vercel.app/');
-    } else {
-      // Fallback for web version
-      window.open('https://quickdrop-drab.vercel.app/', '_blank');
-    }
-  };
-
   const formatTime = (date) => {
     return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -102,53 +102,95 @@ const MainDashboard = ({
     });
   };
 
+  const handleScheduleSave = (data) => {
+    onTimetableUpdate(data);
+    setShowScheduleEditor(false);
+  };
+
+  // Show Schedule Editor
+  if (showScheduleEditor) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center mb-2">
+              <Edit2 className="w-6 h-6 mr-3 text-primary-600" />
+              Edit Schedule
+            </h2>
+            <p className="text-gray-500 text-sm">
+              Changes will sync automatically to all your devices.
+            </p>
+          </div>
+          
+          <ManualTimetableEntry
+            onSave={handleScheduleSave}
+            onCancel={() => setShowScheduleEditor(false)}
+            selectedSection={selectedSection}
+            initialTimetable={timetableData}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
       {/* Header */}
-      <header className="bg-white shadow-lg border-b border-gray-200 glass animate-fade-in"> {/* Added glass and fade-in */}
+      <header className="bg-white shadow-lg border-b border-gray-200 glass animate-fade-in">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20"> {/* Increased height */}
+          <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-4">
-              <div className="bg-primary-600 p-3 rounded-xl shadow-md animate-float"> {/* Increased padding, rounded-xl, shadow, and float animation */}
-                <BookOpen className="w-7 h-7 text-white" /> {/* Increased icon size */}
+              <div className="bg-primary-600 p-3 rounded-xl shadow-md animate-float">
+                <BookOpen className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">ClassPoint</h1> {/* Increased font size and weight */}
-                <p className="text-base text-gray-600">{selectedSection.name}</p> {/* Increased font size, darker text */}
+                <h1 className="text-2xl font-bold text-gray-900">ClassPoint</h1>
+                <p className="text-base text-gray-600">{selectedSection.name}</p>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
               <div className="text-right">
-                <p className="text-base font-medium text-gray-900">{formatTime(currentTime)}</p> {/* Increased font size */}
-                <p className="text-sm text-gray-600">{formatDate(currentTime)}</p> {/* Increased font size, darker text */}
+                <p className="text-base font-medium text-gray-900">{formatTime(currentTime)}</p>
+                <p className="text-sm text-gray-600">{formatDate(currentTime)}</p>
               </div>
               
-              <div className="flex items-center space-x-3"> {/* Adjusted space */}
+              <div className="flex items-center space-x-3">
                 <button
-                  onClick={openQuickdrop}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md"
-                  title="Open Quickdrop - File Sharing App"
+                  onClick={() => setShowScheduleEditor(true)}
+                  className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md"
+                  title="Edit Schedule"
                 >
-                  <Cloud className="w-5 h-5" />
-                  <span className="font-medium">Quickdrop</span>
+                  <Edit2 className="w-5 h-5" />
+                  <span className="font-medium">Edit Schedule</span>
                 </button>
-                
+
                 <button
-                  onClick={toggleWidget}
-                  className="p-3 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-full transition-all duration-300 ease-in-out transform hover:scale-110 shadow-sm"
-                  title={widgetVisible ? 'Hide Widget' : 'Show Widget'}
+                  onClick={() => setShowAttendanceReports(true)}
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md"
+                  title="Attendance Reports"
                 >
-                  {widgetVisible ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
+                  <BarChart2 className="w-5 h-5" />
+                  <span className="font-medium">Reports</span>
                 </button>
                 
                 <button
                   onClick={() => setShowSettings(true)}
                   className="p-3 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-full transition-all duration-300 ease-in-out transform hover:scale-110 shadow-sm"
                   title="Settings"
-                >
+>
                   <Settings className="w-6 h-6" />
                 </button>
+
+                {onSignOut && (
+                  <button
+                    onClick={onSignOut}
+                    className="p-3 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-all duration-300 ease-in-out transform hover:scale-110 shadow-sm"
+                    title="Sign Out"
+                  >
+                    <LogOut className="w-6 h-6" />
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -239,35 +281,57 @@ const MainDashboard = ({
           </div>
         </div>
 
-        {/* Timetable Actions - Simplified for now */}
+        {/* Schedule Overview */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 animate-pop-in">
-          <div className="text-center">
-            <div className="flex justify-center space-x-6 mb-8">
-              <button
-                onClick={handleDemoData}
-                className="flex items-center space-x-3 px-8 py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg font-semibold"
-              >
-                <Calendar className="w-5 h-5" />
-                <span>Load Demo Timetable</span>
-              </button>
-            </div>
-            <div className="mt-8">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-gray-900 flex items-center">
+              <Calendar className="w-6 h-6 mr-3 text-primary-600" />
+              Schedule
+            </h3>
+            <button
+              onClick={() => setShowScheduleEditor(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-all shadow-md"
+            >
+              <Edit2 className="w-4 h-4" />
+              <span>Edit</span>
+            </button>
+          </div>
+
+          {timetableData ? (
+            <TimetableDisplay
+              timetableData={timetableData}
+              selectedSection={selectedSection}
+              currentTime={currentTime}
+            />
+          ) : (
+            <div className="text-center py-12">
               <Calendar className="w-20 h-20 text-primary-400 mx-auto mb-5 animate-float" />
               <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Timetable Status
+                No Schedule Yet
               </h3>
-              {timetableData ? (
-                <p className="text-lg text-gray-600 max-w-md mx-auto">
-                  Your schedule is active and tracking your classes. Use the widget or check the current/next class cards above.
-                </p>
-              ) : (
-                <p className="text-lg text-gray-600 max-w-md mx-auto">
-                  No timetable loaded. Load a demo timetable to get started.
-                </p>
-              )}
+              <p className="text-lg text-gray-600 max-w-md mx-auto mb-6">
+                Create your timetable to start tracking classes.
+              </p>
+              <button
+                onClick={() => setShowScheduleEditor(true)}
+                className="flex items-center space-x-3 px-8 py-4 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg font-semibold mx-auto"
+              >
+                <Edit2 className="w-5 h-5" />
+                <span>Create Schedule</span>
+              </button>
             </div>
-          </div>
+          )}
         </div>
+
+        {/* Sync Status */}
+        {currentUser && (
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-400 flex items-center justify-center space-x-2">
+              <Cloud className="w-4 h-4" />
+              <span>Synced with {currentUser.email}</span>
+            </p>
+          </div>
+        )}
       </main>
 
       {/* Settings Modal */}
@@ -276,10 +340,19 @@ const MainDashboard = ({
         onClose={() => setShowSettings(false)}
         onSettingsChange={(newSettings) => {
           setSettings(newSettings);
+          if (onSettingsChange) onSettingsChange(newSettings);
         }}
         selectedSection={selectedSection}
         onSectionChange={onSectionChange}
       />
+
+      {/* Attendance Reports Modal */}
+      {showAttendanceReports && (
+        <AttendanceDashboard
+          selectedSection={selectedSection}
+          onClose={() => setShowAttendanceReports(false)}
+        />
+      )}
     </div>
   );
 };

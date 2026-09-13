@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Genatis Board Parent & Teacher Portal</title>
+  
+  <!-- Google Fonts & Tailwind -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: '#0A84FF',
+            surface: 'rgba(28, 28, 30, 0.7)',
+            success: '#30D158',
+            warning: '#FF9F0A',
+            danger: '#FF453A',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Firebase Compatibility SDKs (Works perfectly on local file:// protocol) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root {
+      --bg: #09090b;
+      --surface: rgba(20, 20, 22, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --text-primary: #f4f4f5;
+      --text-secondary: #a1a1aa;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
+    }
+    .glass-card {
+      background: var(--surface);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+    }
+    /* Hide scrollbars */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Preloader spin */
+    @keyframes spin-slow {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .animate-spin-slow {
+      animation: spin-slow 2s linear infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased pb-12">
+
+  <!-- Background Glows -->
+  <div class="absolute top-[-10%] left-[-20%] w-[140%] h-[40%] rounded-full bg-[radial-gradient(ellipse_at_top,rgba(10,132,255,0.06),transparent)] pointer-events-none z-0"></div>
+
+  <!-- ─── PRELOADER LOADER SCREEN ─── -->
+  <div id="preloader" class="fixed inset-0 bg-[#09090b] z-[2000] flex flex-col items-center justify-center p-8 transition-opacity duration-500">
+    <div class="relative w-20 h-20 mb-8">
+      <div class="absolute inset-0 rounded-full border-4 border-white/5"></div>
+      <div class="absolute inset-0 rounded-full border-4 border-t-brand animate-spin"></div>
+      <div class="absolute inset-2 bg-[#09090b] rounded-full flex items-center justify-center">
+        <i data-lucide="award" class="w-6 h-6 text-brand animate-pulse"></i>
+      </div>
+    </div>
+    <h2 class="text-xl font-bold tracking-tight mb-2 text-white">Genatis Board Parent</h2>
+    <p class="text-xs text-zinc-500 text-center max-w-[280px] leading-relaxed">
+      Preloading Notice Board, Attendance Tracker, and exam timetables for instant mobile access.
+    </p>
+  </div>
+
+  <!-- Main Container -->
+  <div class="flex-1 flex flex-col z-10 w-full max-w-md mx-auto px-6 pt-6">
+    
+    <!-- Top Action Selector -->
+    <div class="flex justify-between items-center mb-6">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center">
+          <i data-lucide="sparkles" class="w-4 h-4 text-brand"></i>
+        </div>
+        <span class="text-xs font-bold uppercase tracking-wider text-brand">Genatis Board Portal</span>
+      </div>
+    </div>
+
+    <!-- ─── PARENT TAB PANEL ─── -->
+    <div id="parent-panel" class="flex-grow flex flex-col gap-6">
+      <!-- Profile Summary Card -->
+      <header class="flex justify-between items-center bg-zinc-900/40 p-5 rounded-3xl border border-white/5 shadow-sm">
+        <div>
+          <p class="text-[9px] font-bold uppercase tracking-widest text-brand">Student Profile</p>
+          <h1 id="profile-name" class="text-2xl font-black tracking-tight text-white mt-0.5">Daksh</h1>
+          <p id="profile-details" class="text-xs text-zinc-500">Grade 9 Super 1</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-zinc-800 border border-white/5 flex items-center justify-center relative shadow-inner">
+          <span id="profile-avatar" class="font-extrabold text-base text-brand">D</span>
+          <div class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-danger rounded-full border-2 border-zinc-900"></div>
+        </div>
+      </header>
+
+      <!-- Monthly Insights Stat Card -->
+      <section class="glass-card p-4 rounded-3xl flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-success/10 flex items-center justify-center text-success border border-success/20">
+            <i data-lucide="trending-up" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <p class="text-[9px] font-bold uppercase tracking-wider text-zinc-500">Attendance Rate</p>
+            <p id="attendance-rate" class="text-sm font-bold text-zinc-400">100% (No absences marked)</p>
+          </div>
+        </div>
+        <i data-lucide="chevron-right" class="w-4 h-4 opacity-40"></i>
+      </section>
+
+      <!-- Sub Tab Switches -->
+      <nav class="flex bg-zinc-900/60 p-1.5 rounded-[22px] border border-white/5">
+        <button id="tab-notices" class="flex-1 py-2.5 text-center text-[10px] font-bold rounded-xl transition-all bg-brand text-white">
+          Notice Board
+        </button>
+        <button id="tab-timetable" class="flex-1 py-2.5 text-center text-[10px] font-bold rounded-xl transition-all text-zinc-400">
+          Timetable
+        </button>
+        <button id="tab-insights" class="flex-1 py-2.5 text-center text-[10px] font-bold rounded-xl transition-all text-zinc-400">
+          Insights
+        </button>
+        <button id="tab-chat" class="flex-1 py-2.5 text-center text-[10px] font-bold rounded-xl transition-all text-zinc-400">
+          Chat
+        </button>
+      </nav>
+
+      <!-- Parent Panel Content Outlet -->
+      <div id="parent-outlet" class="space-y-4">
+        <!-- Dynamic Notices Grid (Populated by app.js) -->
+      </div>
+    </div>
+
+  <!-- ─── EXPANDED DETAILED DRAWER ─── -->
+  <div id="notice-drawer" class="fixed inset-0 z-[1500] bg-black/70 backdrop-blur-sm hidden items-end justify-center transition-all duration-300">
+    <div class="absolute inset-0" id="drawer-backdrop"></div>
+    <div class="relative w-full max-w-md bg-[#09090b] border-t border-white/10 rounded-t-[32px] p-6 flex flex-col gap-4 max-h-[85vh] overflow-y-auto no-scrollbar z-10 transition-transform duration-300 translate-y-full">
+      <div class="w-12 h-1 bg-white/10 rounded-full mx-auto mb-2" id="drawer-close-bar"></div>
+      
+      <div class="flex justify-between items-start mt-2">
+        <span id="drawer-category" class="px-2.5 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-widest bg-brand/10 text-brand border border-brand/20">
+          CATEGORY
+        </span>
+        <button id="drawer-close" class="p-1.5 rounded-full bg-zinc-900 border border-white/5 text-zinc-500 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <h2 id="drawer-title" class="text-xl font-extrabold tracking-tight text-white mt-1 leading-snug">Notice Title</h2>
+      
+      <div class="flex items-center gap-3 text-[10px] text-zinc-500 pb-3 border-b border-white/5">
+        <i data-lucide="user" class="w-3 h-3"></i>
+        <span id="drawer-author">Author</span>
+        <span>•</span>
+        <i data-lucide="calendar" class="w-3 h-3"></i>
+        <span id="drawer-date">Date</span>
+      </div>
+
+      <p id="drawer-content" class="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap py-2">Notice content...</p>
+
+      <!-- Preloaded Attachment Block -->
+      <div id="drawer-attachment-container" class="hidden mt-4 pt-4 border-t border-white/5">
+        <h4 class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-3">Attached Document</h4>
+        <div class="p-4 rounded-2xl bg-zinc-900 border border-white/5 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-brand/10 text-brand rounded-lg">
+              <i data-lucide="file-text" class="w-5 h-5"></i>
+            </div>
+            <div class="text-xs">
+              <p id="drawer-attachment-name" class="font-bold text-white truncate max-w-[150px]">timetable.pdf</p>
+              <p class="text-[10px] text-zinc-500">Ready to View</p>
+            </div>
+          </div>
+          <button onclick="alert('File preloaded & rendered smoothly')" class="px-3.5 py-2 rounded-xl bg-brand text-white text-xs font-bold active:scale-95 transition-all shadow-sm">
+            View File
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase & App Script bundle loading -->
+  <script src="app.js"></script>
+</body>
+</html>
+
+

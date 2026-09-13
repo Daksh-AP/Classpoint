@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Genatis Founder Leads Portal</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { background: var(--cream); }
+    .lead-portal { padding: 3rem 0; }
+    .lead-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+    .lead-title { font-size: var(--fs-h2); font-family: 'DM Serif Display', serif; }
+    .lead-sub { color: var(--charcoal-50); font-size: var(--fs-small); }
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { padding: 1.5rem; background: var(--white); border-radius: var(--radius-md); border: 1px solid var(--charcoal-10); }
+    .stat-val { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--terracotta); }
+    .stat-lbl { font-size: var(--fs-xs); color: var(--warm-gray); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-top: 0.25rem; }
+    @media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .leads-table-wrap { background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--charcoal-10); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+    .leads-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+    .leads-table th { background: var(--cream-dark); padding: 1rem 1.25rem; font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 1px; color: var(--charcoal-70); font-weight: 600; border-bottom: 1px solid var(--charcoal-10); }
+    .leads-table td { padding: 1.25rem; border-bottom: 1px solid var(--charcoal-10); vertical-align: top; }
+    .leads-table tr:last-child td { border-bottom: none; }
+    .leads-table tr:hover { background: rgba(0,0,0,0.01); }
+
+    .action-btn { background: none; border: 1px solid var(--charcoal-10); border-radius: var(--radius-sm); padding: 0.4rem 0.75rem; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; color: var(--charcoal); text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem; }
+    .action-btn:hover { background: var(--cream-dark); border-color: var(--charcoal-30); }
+    .action-btn--danger:hover { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+
+    .pin-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(46,43,40,0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    .pin-card { background: var(--white); padding: 2.5rem; border-radius: var(--radius-xl); max-width: 380px; width: 90%; text-align: center; border: 1px solid var(--charcoal-10); box-shadow: 0 20px 50px rgba(0,0,0,0.15); }
+
+    .status-select { padding: 0.3rem 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--charcoal-10); background: var(--white); font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="container nav__inner">
+      <a href="index.html" class="nav__logo">Genatis</a>
+      <span style="font-size: 0.8rem; background: var(--terracotta-bg); color: var(--terracotta); padding: 0.25rem 0.75rem; border-radius: var(--radius-full); font-weight: 600;">Founder Portal</span>
+      <a href="index.html" class="nav__link">← Back to Site</a>
+    </div>
+  </nav>
+
+  <!-- PIN Protection Modal -->
+  <div class="pin-modal" id="pin-modal">
+    <div class="pin-card">
+      <h2 style="font-family:'DM Serif Display',serif; margin-bottom:0.5rem;">Founder Access</h2>
+      <p style="color:var(--charcoal-50); font-size:var(--fs-small); margin-bottom:1.5rem;">Enter your Founder Security PIN to view inbound school demo requests.</p>
+      <form id="pin-form">
+        <input type="password" id="pin-input" placeholder="Enter PIN (Default: 1234)" style="width:100%; padding:0.75rem; border-radius:var(--radius-md); border:1px solid var(--charcoal-10); margin-bottom:1rem; text-align:center; font-size:1.25rem; letter-spacing:4px;" required autofocus>
+        <button type="submit" class="btn btn--primary" style="width:100%; justify-content:center;">Unlock Portal</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Portal Content -->
+  <main class="lead-portal container" id="portal-content" style="display:none;">
+    <div class="lead-header">
+      <div>
+        <h1 class="lead-title">Inbound School Leads</h1>
+        <p class="lead-sub">Real-time telemetry of principals and school leaders requesting demos.</p>
+      </div>
+      <div>
+        <button id="lock-btn" class="action-btn">🔒 Lock Portal</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-val" id="stat-total">0</div>
+        <div class="stat-lbl">Total Demo Requests</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-new" style="color: #856404;">0</div>
+        <div class="stat-lbl">New Unread Leads</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-contacted" style="color: #004085;">0</div>
+        <div class="stat-lbl">Contacted</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-pilot" style="color: #155724;">0</div>
+        <div class="stat-lbl">Active 30-Day Pilots</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="leads-table-wrap">
+      <table class="leads-table">
+        <thead>
+          <tr>
+            <th>Date & Time</th>
+            <th>School / Size</th>
+            <th>Contact Person</th>
+            <th>Interested Plan</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="leads-tbody">
+          <tr>
+            <td colspan="6" style="text-align:center; padding:3rem; color:var(--charcoal-50);">
+              Connecting to live Firestore database...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Firebase Live Sync -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA0kxK-DTY4sGZ4BKVRQ0ADaLzCRJaJBt4",
+      authDomain: "classpoint-2.firebaseapp.com",
+      projectId: "classpoint-2",
+      storageBucket: "classpoint-2.appspot.com",
+      messagingSenderId: "798509953266",
+      appId: "1:798509953266:web:f133ac64e68b54bba4a06b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // PIN Authentication Logic
+    const PIN_KEY = "genatis_founder_unlocked";
+    const DEFAULT_PIN = "1234";
+
+    const pinModal = document.getElementById('pin-modal');
+    const portalContent = document.getElementById('portal-content');
+    const pinForm = document.getElementById('pin-form');
+    const pinInput = document.getElementById('pin-input');
+    const lockBtn = document.getElementById('lock-btn');
+
+    const checkPin = () => {
+      if (sessionStorage.getItem(PIN_KEY) === 'true') {
+        pinModal.style.display = 'none';
+        portalContent.style.display = 'block';
+        initRealtimeLeads();
+      } else {
+        pinModal.style.display = 'flex';
+        portalContent.style.display = 'none';
+      }
+    };
+
+    pinForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (pinInput.value === DEFAULT_PIN || pinInput.value === 'genatis2026') {
+        sessionStorage.setItem(PIN_KEY, 'true');
+        checkPin();
+      } else {
+        alert('Invalid Founder PIN. Try "1234"');
+      }
+    });
+
+    lockBtn.addEventListener('click', () => {
+      sessionStorage.removeItem(PIN_KEY);
+      checkPin();
+    });
+
+    checkPin();
+
+    // Firestore Live Realtime Sync
+    function initRealtimeLeads() {
+      const tbody = document.getElementById('leads-tbody');
+      const q = query(collection(db, 'demo_requests'), orderBy('createdAt', 'desc'));
+
+      onSnapshot(q, (snapshot) => {
+        if (snapshot.empty) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:3rem; color:var(--charcoal-50);">No demo requests submitted yet. Test it by submitting a request on the pricing page!</td></tr>`;
+          updateStats([]);
+          return;
+        }
+
+        const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        updateStats(docs);
+
+        tbody.innerHTML = docs.map(lead => {
+          const dateStr = lead.createdAt ? new Date(lead.createdAt).toLocaleString() : 'N/A';
+          const status = lead.status || 'new';
+          
+          return `
+            <tr>
+              <td>
+                <div style="font-weight:600;">${dateStr.split(',')[0]}</div>
+                <div style="font-size:0.75rem; color:var(--warm-gray);">${dateStr.split(',')[1] || ''}</div>
+              </td>
+              <td>
+                <div style="font-weight:700; font-size:0.95rem; color:var(--charcoal);">${escapeHtml(lead.school || 'Unknown School')}</div>
+                <div style="font-size:0.8rem; color:var(--charcoal-50);">${escapeHtml(lead.schoolSize || 'Size not specified')}</div>
+              </td>
+              <td>
+                <div style="font-weight:600;">${escapeHtml(lead.name || 'Anonymous')}</div>
+                <div style="font-size:0.8rem; color:var(--charcoal-50);">
+                  <a href="mailto:${escapeHtml(lead.email)}" style="color:var(--terracotta); text-decoration:none;">${escapeHtml(lead.email)}</a>
+                </div>
+                ${lead.phone ? `<div style="font-size:0.75rem; color:var(--warm-gray);">📞 ${escapeHtml(lead.phone)}</div>` : ''}
+              </td>
+              <td>
+                <span style="font-weight:600; font-size:0.85rem; color:var(--terracotta);">${escapeHtml(lead.interestedPlan || 'Core')}</span>
+              </td>
+              <td>
+                <select class="status-select" data-id="${lead.id}">
+                  <option value="new" ${status === 'new' ? 'selected' : ''}>🟡 New</option>
+                  <option value="contacted" ${status === 'contacted' ? 'selected' : ''}>🔵 Contacted</option>
+                  <option value="pilot" ${status === 'pilot' ? 'selected' : ''}>🟢 30-Day Pilot</option>
+                  <option value="closed" ${status === 'closed' ? 'selected' : ''}>⚪ Closed / Convert</option>
+                </select>
+              </td>
+              <td>
+                <div style="display:flex; gap:0.4rem;">
+                  <a href="mailto:${escapeHtml(lead.email)}?subject=Genatis%20Demo%20Request%20-%20${encodeURIComponent(lead.school)}&body=Hi%20${encodeURIComponent(lead.name)},%0A%0AThank%20you%20for%20requesting%20a%20demo%20for%20${encodeURIComponent(lead.school)}!%0A%0AWould%20you%20have%2010%20minutes%20this%20week%20for%20a%20quick%20walkthrough?%0A%0ABest,%0AGenatis%20Team" class="action-btn" title="Send Email">✉️ Reply</a>
+                  <button class="action-btn action-btn--danger delete-btn" data-id="${lead.id}" title="Delete Lead">🗑️</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        // Attach event listeners to status selectors & delete buttons
+        document.querySelectorAll('.status-select').forEach(sel => {
+          sel.addEventListener('change', async (e) => {
+            const leadId = e.target.dataset.id;
+            const newStatus = e.target.value;
+            try {
+              await updateDoc(doc(db, 'demo_requests', leadId), { status: newStatus });
+            } catch (err) {
+              alert('Failed to update status');
+            }
+          });
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const leadId = e.target.dataset.id;
+            if (confirm('Delete this lead permanently?')) {
+              try {
+                await deleteDoc(doc(db, 'demo_requests', leadId));
+              } catch (err) {
+                alert('Failed to delete lead');
+              }
+            }
+          });
+        });
+      });
+    }
+
+    function updateStats(docs) {
+      document.getElementById('stat-total').textContent = docs.length;
+      document.getElementById('stat-new').textContent = docs.filter(d => (d.status || 'new') === 'new').length;
+      document.getElementById('stat-contacted').textContent = docs.filter(d => d.status === 'contacted').length;
+      document.getElementById('stat-pilot').textContent = docs.filter(d => d.status === 'pilot').length;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /shared_files/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+    
+    match /{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+  }
+}

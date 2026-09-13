@@ -71,7 +71,7 @@ npx electron-forge import
 ### **Option 4: Custom CDN Distribution**
 
 #### **Vercel/Netlify for Web Interface**
-- Host a landing page with download links
+- Host a landing page and documentation
 - Analytics and user tracking
 - Professional presentation
 
@@ -127,7 +127,7 @@ npm run release             # Build and publish to GitHub
 ### **GitHub (Free)**
 - Unlimited public repositories
 - GitHub Actions for CI/CD
-- GitHub Releases for distribution
+- GitHub Releases for management
 - Built-in analytics
 
 ### **AWS (Professional)**
@@ -194,13 +194,11 @@ npm run release             # Build and publish to GitHub
    - Release automation
 
 3. **GitHub Releases** (Free)
-   - Professional distribution
-   - Download analytics
-   - Version management
+   - Release management
+   - Version tracking
 
 4. **Vercel Landing Page** (Free)
    - Professional presentation
-   - Download links
    - Documentation
 
 5. **Custom Domain** ($10/year)

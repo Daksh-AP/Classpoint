@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Save, X, Clock, User, BookOpen, MapPin } from 'lucide-react';
 
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const TIME_SLOTS = [
-  '08:00', '08:15', '08:30', '08:45',
+  '08:00', '08:15', '08:20', '08:25', '08:30', '08:45',
   '09:00', '09:15', '09:30', '09:45',
   '10:00', '10:15', '10:30', '10:45',
   '11:00', '11:15', '11:30', '11:45',
@@ -16,24 +16,29 @@ const TIME_SLOTS = [
   '17:00', '17:15', '17:30', '17:45'
 ];
 
-const SECTIONS = [
-  { id: 'super1', name: 'Super 1' },
-  { id: 'super2', name: 'Super 2' },
-  { id: 'super3', name: 'Super 3' },
-  { id: 'whiz1', name: 'Whiz 1' },
-  { id: 'whiz2', name: 'Whiz 2' },
-  { id: 'whiz3', name: 'Whiz 3' },
-];
+const ManualTimetableEntry = ({ onSave, onCancel, selectedSection, initialTimetable }) => {
+  const [currentDay, setCurrentDay] = useState(() => {
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+    return DAYS.includes(today) ? today : 'Monday';
+  });
 
-const ManualTimetableEntry = ({ onSave, onCancel, selectedSection }) => {
-  const [currentDay, setCurrentDay] = useState('Monday');
   const [timetableData, setTimetableData] = useState(() => {
-    const initialData = { sections: {} };
-    SECTIONS.forEach(section => {
-      initialData.sections[section.id] = {};
+    if (initialTimetable) {
+      // Clone existing timetable and ensure all days exist for the section
+      const data = JSON.parse(JSON.stringify(initialTimetable));
+      if (!data.sections) data.sections = {};
+      if (!data.sections[selectedSection.id]) data.sections[selectedSection.id] = {};
       DAYS.forEach(day => {
-        initialData.sections[section.id][day] = [];
+        if (!data.sections[selectedSection.id][day]) {
+          data.sections[selectedSection.id][day] = [];
+        }
       });
+      return data;
+    }
+    const initialData = { sections: {} };
+    initialData.sections[selectedSection.id] = {};
+    DAYS.forEach(day => {
+      initialData.sections[selectedSection.id][day] = [];
     });
     return initialData;
   });
@@ -68,7 +73,7 @@ const ManualTimetableEntry = ({ onSave, onCancel, selectedSection }) => {
     }
 
     // Check for time conflicts
-    const daySchedule = timetableData.sections[selectedSection.id][currentDay];
+    const daySchedule = timetableData.sections[selectedSection.id]?.[currentDay] || [];
     const hasConflict = daySchedule.some(existingClass => {
       const existingStart = timeToMinutes(existingClass.startTime);
       const existingEnd = timeToMinutes(existingClass.endTime);
@@ -100,9 +105,11 @@ const ManualTimetableEntry = ({ onSave, onCancel, selectedSection }) => {
       return;
     }
 
-    const updatedData = { ...timetableData };
-    const daySchedule = [...updatedData.sections[selectedSection.id][currentDay]];
+    const updatedData = JSON.parse(JSON.stringify(timetableData));
+    if (!updatedData.sections[selectedSection.id]) updatedData.sections[selectedSection.id] = {};
+    if (!updatedData.sections[selectedSection.id][currentDay]) updatedData.sections[selectedSection.id][currentDay] = [];
     
+    const daySchedule = updatedData.sections[selectedSection.id][currentDay];
     daySchedule.push({ ...newClass });
     
     // Sort by start time
@@ -123,8 +130,8 @@ const ManualTimetableEntry = ({ onSave, onCancel, selectedSection }) => {
   };
 
   const removeClass = (index) => {
-    const updatedData = { ...timetableData };
-    const daySchedule = [...updatedData.sections[selectedSection.id][currentDay]];
+    const updatedData = JSON.parse(JSON.stringify(timetableData));
+    const daySchedule = updatedData.sections[selectedSection.id][currentDay];
     daySchedule.splice(index, 1);
     updatedData.sections[selectedSection.id][currentDay] = daySchedule;
     setTimetableData(updatedData);
@@ -143,19 +150,21 @@ const ManualTimetableEntry = ({ onSave, onCancel, selectedSection }) => {
 
   const getAllSubjects = () => {
     const subjects = new Set();
-    Object.values(timetableData.sections).forEach(section => {
-      Object.values(section).forEach(daySchedule => {
-        daySchedule.forEach(classItem => {
-          if (classItem.subject) {
-            subjects.add(classItem.subject);
-          }
-        });
+    if (timetableData.sections[selectedSection.id]) {
+      Object.values(timetableData.sections[selectedSection.id]).forEach(daySchedule => {
+        if (Array.isArray(daySchedule)) {
+          daySchedule.forEach(classItem => {
+            if (classItem.subject) {
+              subjects.add(classItem.subject);
+            }
+          });
+        }
       });
-    });
+    }
     return Array.from(subjects);
   };
 
-  const currentDaySchedule = timetableData.sections[selectedSection.id][currentDay];
+  const currentDaySchedule = timetableData.sections[selectedSection.id]?.[currentDay] || [];
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -172,12 +181,12 @@ const ManualTimetableEntry = ({ onSave, onCancel, selectedSection }) => {
         </div>
 
         {/* Day Selector */}
-        <div className="flex space-x-2 mb-6">
+        <div className="flex space-x-2 mb-6 overflow-x-auto pb-2">
           {DAYS.map(day => (
             <button
               key={day}
               onClick={() => setCurrentDay(day)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium transition-colors ${
                 currentDay === day
                   ? 'bg-primary-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -341,7 +350,7 @@ const ManualTimetableEntry = ({ onSave, onCancel, selectedSection }) => {
       {/* Action Buttons */}
       <div className="flex justify-between items-center">
         <div className="text-sm text-gray-500">
-          Total classes: {Object.values(timetableData.sections[selectedSection.id]).reduce((total, day) => total + day.length, 0)}
+          Total classes: {Object.values(timetableData.sections[selectedSection.id] || {}).reduce((total, day) => total + (Array.isArray(day) ? day.length : 0), 0)}
         </div>
         
         <div className="flex space-x-3">

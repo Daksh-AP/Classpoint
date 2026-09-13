@@ -1,6 +1,6 @@
-# ClassPoint Website
+# Genatis Board Website
 
-Beautiful, professional website for ClassPoint desktop app distribution.
+Beautiful, professional website for Genatis Board desktop app distribution.
 
 ## 🌟 Features
 
@@ -8,7 +8,7 @@ Beautiful, professional website for ClassPoint desktop app distribution.
 - **Responsive**: Works perfectly on desktop, tablet, and mobile
 - **Fast Loading**: Optimized with Tailwind CSS CDN
 - **SEO Optimized**: Meta tags, structured content
-- **Call-to-Action**: Clear download buttons and instructions
+- **Call-to-Action**: Clear entry points and instructions
 
 ## 🚀 Quick Deploy to Vercel (FREE)
 
@@ -23,11 +23,11 @@ vercel
 
 # Follow prompts:
 # - Link to existing project? No
-# - Project name: classpoint-website
+# - Project name: Genatis Board-website
 # - Directory: ./
 # - Override settings? No
 
-# Your site will be live at: https://classpoint-website-xxx.vercel.app
+# Your site will be live at: https://Genatis Board-website-xxx.vercel.app
 ```
 
 ### Option 2: Vercel Dashboard
@@ -44,28 +44,20 @@ vercel
 
 ## 🔧 Customization
 
-### Update Download Link
-In `index.html`, find the `downloadApp()` function and replace with your actual download URL:
 
-```javascript
-function downloadApp() {
-    // Replace with your actual download link
-    window.location.href = 'https://github.com/your-username/classpoint/releases/download/v1.0.0/ClassPoint-Portable.zip';
-}
-```
 
 ### Custom Domain (Optional)
-1. Buy domain (e.g., `classpoint.app`)
+1. Buy domain (e.g., `Genatis Board.app`)
 2. In Vercel dashboard: Settings → Domains
 3. Add your custom domain
 4. Update DNS records as instructed
 
 ## 📱 Website Sections
 
-- **Hero**: Eye-catching intro with download CTA
+- **Hero**: Eye-catching intro
 - **Features**: 6 key features with icons and descriptions
 - **Screenshots**: Visual preview of the app
-- **Download**: Main download section with instructions
+
 - **Support**: Help and contact information
 - **Footer**: Links and branding
 
@@ -95,8 +87,8 @@ Add Google Analytics by inserting this before `</head>`:
 ## 🔗 Example URLs
 
 After deployment, your website will be available at:
-- **Vercel**: `https://classpoint-website.vercel.app`
-- **Custom Domain**: `https://classpoint.app` (if configured)
+- **Vercel**: `https://Genatis Board-website.vercel.app`
+- **Custom Domain**: `https://Genatis Board.app` (if configured)
 
 ## 📈 SEO Features
 
@@ -106,4 +98,4 @@ After deployment, your website will be available at:
 - Fast loading times
 - Mobile-responsive design
 
-Your professional ClassPoint website is ready to deploy! 🚀
+Your professional Genatis Board website is ready to deploy! 🚀

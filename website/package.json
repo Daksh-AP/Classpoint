@@ -1,7 +1,7 @@
 {
-  "name": "classpoint-website",
+  "name": "Genatis Board-website",
   "version": "1.0.0",
-  "description": "ClassPoint Desktop App - Official Website",
+  "description": "Genatis Board Desktop App - Official Website",
   "main": "index.html",
   "scripts": {
     "dev": "python -m http.server 3000",
@@ -9,12 +9,13 @@
     "deploy": "vercel --prod"
   },
   "keywords": [
-    "classpoint",
+    "Genatis Board",
     "timetable",
     "teacher",
     "desktop-app",
     "education"
   ],
-  "author": "ClassPoint",
+  "author": "Genatis Board",
   "license": "MIT"
 }
+

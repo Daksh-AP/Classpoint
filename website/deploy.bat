@@ -1,6 +1,6 @@
 @echo off
 echo ========================================
-echo   ClassPoint Website Deployment
+echo   Genatis Website Deployment
 echo ========================================
 echo.
 

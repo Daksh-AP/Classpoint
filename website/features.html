@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Features — Genatis</title>
+  <meta name="description" content="Explore Genatis's modules: Attendance, Timetable, Homework, Analytics, Parent Portal, and more.">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .page-hero { padding: clamp(7rem,11vw,9rem) 0 clamp(2rem,4vw,3.5rem); }
+    .page-hero__headline { font-size: var(--fs-h1); margin-bottom: 0.75rem; }
+    .page-hero__sub { color: var(--charcoal-50); font-size: clamp(1rem,1.8vw,1.1rem); max-width: 520px; line-height: 1.75; }
+
+    /* Stats strip */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center; padding: 2rem; background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--charcoal-10); }
+    .stat__num { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--terracotta); }
+    .stat__label { font-size: var(--fs-xs); color: var(--warm-gray); margin-top: 0.2rem; }
+    @media (max-width: 640px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+    /* Module row */
+    .module { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2rem,4vw,4rem); align-items: center; padding: clamp(3rem,5vw,4.5rem) 0; }
+    .module--flip .module__visual { order: -1; }
+    .module__content { display: flex; flex-direction: column; gap: 1rem; }
+    .module__label { font-size: var(--fs-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--terracotta); }
+    .module__title { font-size: var(--fs-h2); }
+    .module__desc { color: var(--charcoal-50); line-height: 1.75; }
+    .module__list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .module__list-item { display: flex; align-items: center; gap: 0.6rem; font-size: var(--fs-small); color: var(--charcoal-70); }
+    .module__list-check { color: var(--terracotta); font-size: 0.85rem; flex-shrink: 0; }
+    .module__tag { display: inline-block; padding: 0.3rem 0.9rem; border-radius: var(--radius-full); font-size: var(--fs-xs); font-weight: 600; background: var(--terracotta-bg); color: var(--terracotta); margin-top: 0.25rem; }
+    .module__visual img {
+      border-radius: var(--radius-lg); border: 1px solid var(--charcoal-10);
+      box-shadow: 0 12px 40px rgba(46,43,40,0.06);
+    }
+    @media (max-width: 768px) {
+      .module { grid-template-columns: 1fr; }
+      .module--flip .module__visual { order: 0; }
+    }
+
+    /* More features grid */
+    .more-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+    .more-item { padding: 1.5rem; display: flex; gap: 0.85rem; align-items: flex-start; }
+    .more-icon { font-size: 1.25rem; margin-top: 1px; }
+    .more-title { font-weight: 600; margin-bottom: 0.2rem; }
+    .more-desc { color: var(--charcoal-50); font-size: var(--fs-small); line-height: 1.6; }
+
+    .cta-block {
+      text-align: center; padding: 3rem 2rem; background: var(--white);
+      border-radius: var(--radius-xl); border: 1px solid var(--charcoal-10);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="container nav__inner">
+      <a href="index.html" class="nav__logo">Genatis</a>
+      <ul class="nav__links">
+        <li><a href="index.html" class="nav__link">Home</a></li>
+        <li><a href="features.html" class="nav__link nav__link--active">Features</a></li>
+        <li><a href="pricing.html" class="nav__link">Pricing</a></li>
+        <li><a href="founder.html" class="nav__link">About</a></li>
+        <li><a href="pricing.html#demo" class="nav__cta">Request Demo</a></li>
+      </ul>
+      <button class="nav__hamburger" id="nav-hamburger" aria-label="Toggle menu">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="container nav__mobile" id="nav-mobile">
+      <a href="index.html" class="nav__link">Home</a>
+      <a href="features.html" class="nav__link nav__link--active">Features</a>
+      <a href="pricing.html" class="nav__link">Pricing</a>
+      <a href="founder.html" class="nav__link">About</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="page-hero">
+    <div class="container">
+      <div class="reveal" style="text-align:center; max-width:650px; margin:0 auto;">
+        <p class="section-label">Genatis Product Ecosystem</p>
+        <h1 class="page-hero__headline">Built-in power. <em>Infinite add-on potential.</em></h1>
+        <p class="page-hero__sub mx-auto">Genatis connects classroom Smartboards, teacher mobile apps, parent communication, and admin controls in one real-time cloud suite.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <div class="container mb-4">
+    <div class="stats reveal">
+      <div class="stat"><p class="stat__num" data-count="8" data-suffix="+">0</p><p class="stat__label">Core Modules</p></div>
+      <div class="stat"><p class="stat__num" data-count="50" data-suffix="+">0</p><p class="stat__label">Features</p></div>
+      <div class="stat"><p class="stat__num" data-count="30" data-suffix="s">0</p><p class="stat__label">Avg. Task Time</p></div>
+      <div class="stat"><p class="stat__num" data-count="100" data-suffix="%">0</p><p class="stat__label">Offline Capable</p></div>
+    </div>
+  </div>
+
+  <!-- Part 1: Built-In Core Apps -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header reveal" style="text-align:center; max-width:600px; margin:0 auto 3rem;">
+        <p class="section-label">Included Out of the Box</p>
+        <h2 class="section-title">Built-In Core Suite</h2>
+        <p class="section-subtitle">Four tightly integrated applications running on zero-latency Firebase Cloud infrastructure.</p>
+      </div>
+
+      <!-- Module 1: Genatis Board -->
+      <div class="module reveal">
+        <div class="module__content">
+          <p class="module__label">App 01 — Smartboard Desktop</p>
+          <h2 class="module__title">Genatis Board / Canvas</h2>
+          <p class="module__desc">Interactive flat panel and desktop app designed for active classroom instruction and real-time attendance logging.</p>
+          <ul class="module__list">
+            <li class="module__list-item"><span class="module__list-check">✓</span> Digital Interactive Whiteboard with sticky notes & shape tools</li>
+            <li class="module__list-item"><span class="module__list-check">✓</span> PDF Annotator with History Blob Exports</li>
+            <li class="module__list-item"><span class="module__list-check">✓</span> 1-Tap Attendance Logger with virtualization for large classes</li>
+            <li class="module__list-item"><span class="module__list-check">✓</span> Live Period & Timetable Hero Display</li>
+          </ul>
+          <span class="module__tag">Included in Core</span>
+        </div>
+        <div class="module__visual">
+          <img src="assets/dashboard-mockup.png" alt="Genatis Board Smartboard Interface">
+        </div>
+      </div>
+
+      <div class="container"><hr class="divider"></div>
+
+      <!-- Module 2: Genatis Command -->
+      <div class="module module--flip reveal">
+        <div class="module__content">
+          <p class="module__label">App 02 — Administrator Cloud Portal</p>
+          <h2 class="module__title">Genatis Command</h2>
+          <p class="module__desc">Full cloud telemetry dashboard for Principals, IT Directors, and Coordinators to manage school data without IT overhead.</p>
+          <ul class="module__list">
+            <li class="module__list-item"><span class="module__list-check">✓</span> 1-Click CSV Roster Import with automatic path sanitization</li>
+            <li class="module__list-item"><span class="module__list-check">✓</span> Live Daily Attendance Telemetry Hub (Submitted vs Pending classes)</li>
+            <li class="module__list-item"><span class="module__list-check">✓</span> 1-Tap Emergency SOS Broadcast & Lockdown Trigger</li>
+            <li class="module__list-item"><span class="module__list-check">✓</span> Substitute Teacher Delegation with PIN authentication</li>
+            <li class="module__list-item"><span class="module__list-check">✓</span> School Bulletins & Circulars Publishing Board</li>
+          </ul>
+          <span class="module__tag">Included in Core</span>
+        </div>
+        <div class="module__visual">
+          <img src="assets/features-collage.png" alt="Genatis Command Admin Portal">
+        </div>
+      </div>
+
+      <div class="container"><hr class="divider"></div>
+
+      <!-- Module 3: Genatis Staff -->
+      <div class="module reveal">
+        <div class="module__content">
+          <p class="module__label">App 03 — Teacher Mobile App</p>
+          <h2 class="module__title">Genatis Staff</h2>
+          <p class="module__desc">iOS & Android mobile app giving teachers full mobility around campus with complete offline resilience.</p>
+          <ul class="module__list">
+            <li class="module__list-item"><span class="module__list-check">✓</span> On-the-Go Attendance for assigned classes</li>
+            <li class="module__list-item"><span class="module__list-check">✓</span> Direct Teacher-to-Parent messaging with read receipts</li>
+            <li class="module__list-item"><span class="module__list-check">✓</span> Lesson Log & Session Summary entry</li>
+            <li class="module__list-item"><span class="module__list-check">✓</span> Offline persistence (Zustand + NetInfo guards)</li>
+          </ul>
+          <span class="module__tag">Included in Core</span>
+        </div>
+        <div class="module__visual">
+          <img src="assets/dashboard-mockup.png" alt="Genatis Staff Teacher App">
+        </div>
+      </div>
+
+      <div class="container"><hr class="divider"></div>
+
+      <!-- Module 4: Genatis Home -->
+      <div class="module module--flip reveal">
+        <div class="module__content">
+          <p class="module__label">App 04 — Parent Mobile App</p>
+          <h2 class="module__title">Genatis Home</h2>
+          <p class="module__desc">Dedicated parent app providing complete transparency into their child's school day.</p>
+          <ul class="module__list">
+            <li class="module__list-item"><span class="module__list-check">✓</span> Student 360° Pulse Dashboard (Attendance & Timetable)</li>
+            <li class="module__list-item"><span class="module__list-check">✓</span> Real-time School Bulletins, Notices & Circulars</li>
+            <li class="module__list-item"><span class="module__list-check">✓</span> 1-on-1 Scoped Chat with Subject Teachers</li>
+            <li class="module__list-item"><span class="module__list-check">✓</span> Learning Resources & Homework document access</li>
+          </ul>
+          <span class="module__tag">Included in Core</span>
+        </div>
+        <div class="module__visual">
+          <img src="assets/features-collage.png" alt="Genatis Home Parent App">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Part 2: Enterprise Add-On Expansion Modules -->
+  <section class="section" style="background:var(--white);">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">Modular Expansion Packages</p>
+        <h2 class="section-title">Optional Enterprise Add-Ons</h2>
+        <p class="section-subtitle">Unlock powerful advanced capabilities whenever your school is ready to scale.</p>
+      </div>
+      <div class="more-grid stagger">
+        <div class="more-item card">
+          <span class="more-icon">🤖</span>
+          <div>
+            <p class="more-title">AI Academic & Analytics Digest</p>
+            <p class="more-desc">Auto-generates weekly AI parent summaries and alerts coordinators if curriculum pacing falls behind.</p>
+          </div>
+        </div>
+        <div class="more-item card">
+          <span class="more-icon">🛡️</span>
+          <div>
+            <p class="more-title">SafeSchool SOS & Gatekeeper QR</p>
+            <p class="more-desc">1-tap room-level panic alerts on Smartboards and QR-code student checkout at the front gate.</p>
+          </div>
+        </div>
+        <div class="more-item card">
+          <span class="more-icon">🚌</span>
+          <div>
+            <p class="more-title">Live Bus GPS & Fleet Manifest</p>
+            <p class="more-desc">Real-time bus tracking map in the Parent App with driver attendance manifest scanning.</p>
+          </div>
+        </div>
+        <div class="more-item card">
+          <span class="more-icon">💳</span>
+          <div>
+            <p class="more-title">Genatis Pay & Tuition Portal</p>
+            <p class="more-desc">Digital tuition, canteen, and field trip payments in the Parent App with automated fee reminders.</p>
+          </div>
+        </div>
+        <div class="more-item card">
+          <span class="more-icon">⭐</span>
+          <div>
+            <p class="more-title">Smartboard Merits & PBIS</p>
+            <p class="more-desc">Award digital merit badges on the interactive whiteboard with instant push updates to parents.</p>
+          </div>
+        </div>
+        <div class="more-item card">
+          <span class="more-icon">📝</span>
+          <div>
+            <p class="more-title">Gradebook & Report Card Kiosk</p>
+            <p class="more-desc">1-click official PDF report card generation with digital principal signatures and exam kiosk mode.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section">
+    <div class="container">
+      <div class="cta-block reveal">
+        <h2 style="font-size:var(--fs-h2); margin-bottom:0.5rem;">See it in action</h2>
+        <p style="color:var(--charcoal-50); margin-bottom:1.5rem; max-width:400px; margin-left:auto; margin-right:auto; font-size:var(--fs-small);">Book a 15-minute demo and discover how Genatis can save your school hundreds of hours.</p>
+        <a href="pricing.html#demo" class="btn btn--primary">Request a Demo</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__grid">
+        <div><p class="footer__brand-name">Genatis</p><p class="footer__brand-desc">Built by students, for students. Simplifying education, one school at a time.</p></div>
+        <div><p class="footer__col-title">Product</p><ul class="footer__links"><li><a href="features.html" class="footer__link">Features</a></li><li><a href="pricing.html" class="footer__link">Pricing</a></li></ul></div>
+        <div><p class="footer__col-title">Company</p><ul class="footer__links"><li><a href="founder.html" class="footer__link">About</a></li><li><a href="mailto:hello@Genatis.in" class="footer__link">Contact</a></li></ul></div>
+        <div><p class="footer__col-title">Resources</p><ul class="footer__links"><li><a href="quick-start.html" class="footer__link">Quick Start</a></li><li><a href="mailto:support@Genatis.in" class="footer__link">Support</a></li></ul></div>
+      </div>
+      <div class="footer__bottom">
+        <p class="footer__copy">© 2026 Genatis. Made in India.</p>
+        <div class="footer__socials"><a href="#" class="footer__social" aria-label="Twitter">𝕏</a><a href="#" class="footer__social" aria-label="LinkedIn">in</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
+
+

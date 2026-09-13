@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — Daksh | The Story Behind Genatis</title>
+  <meta name="description" content="Meet Daksh — the student behind Genatis. Why he built a school management platform from scratch and his vision for education.">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .about-hero {
+      padding: clamp(7rem,11vw,9rem) 0 clamp(2rem,4vw,3.5rem);
+      text-align: center; max-width: 680px; margin: 0 auto;
+    }
+    .about-hero__name { font-size: var(--fs-h1); margin-bottom: 0.25rem; }
+    .about-hero__role { color: var(--terracotta); font-weight: 600; font-size: var(--fs-body); margin-bottom: 1rem; }
+    .about-hero__tagline { color: var(--charcoal-50); font-size: clamp(1.05rem,2vw,1.2rem); line-height: 1.7; font-style: italic; margin: 0 auto; }
+    .about-hero__links { display: flex; gap: 0.5rem; margin-top: 1.5rem; justify-content: center; }
+    .about-link {
+      padding: 0.4rem 1rem; border-radius: var(--radius-full); font-size: var(--fs-small);
+      font-weight: 500; border: 1px solid var(--charcoal-10); color: var(--charcoal-70);
+      transition: var(--transition);
+    }
+    .about-link:hover { border-color: var(--charcoal-30); color: var(--charcoal); }
+
+    /* Story */
+    .story { max-width: 680px; margin: 0 auto; }
+    .story-block { margin-bottom: clamp(2.5rem,4vw,3.5rem); }
+    .story-block__icon { font-size: 1.6rem; margin-bottom: 0.75rem; }
+    .story-block__title { font-size: var(--fs-h2); margin-bottom: 0.75rem; }
+    .story-block__text { color: var(--charcoal-50); line-height: 1.8; }
+    .story-block__text p { margin-bottom: 0.85rem; }
+    .story-block__text strong { color: var(--charcoal); }
+    .story-block__text em { color: var(--charcoal-70); }
+
+    .pull-quote {
+      padding: 1.75rem 2rem; margin: 1.5rem 0;
+      border-left: 3px solid var(--terracotta); background: var(--white);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    }
+    .pull-quote p { font-family: 'DM Serif Display', serif; font-size: var(--fs-h3); line-height: 1.5; color: var(--charcoal); }
+    .pull-quote cite { display: block; margin-top: 0.5rem; font-size: var(--fs-small); color: var(--warm-gray); font-style: normal; }
+
+    /* Timeline */
+    .timeline { padding-left: 2rem; position: relative; }
+    .timeline::before {
+      content: ''; position: absolute; left: 8px; top: 6px; bottom: 6px; width: 2px;
+      background: var(--charcoal-10); border-radius: 2px;
+    }
+    .tl-item { position: relative; margin-bottom: 1.75rem; }
+    .tl-dot {
+      position: absolute; left: -2rem; top: 5px; width: 18px; height: 18px;
+      border-radius: 50%; border: 2.5px solid var(--terracotta); background: var(--cream);
+    }
+    .tl-year { font-weight: 700; font-size: var(--fs-small); color: var(--terracotta); margin-bottom: 0.15rem; }
+    .tl-title { font-weight: 600; margin-bottom: 0.2rem; }
+    .tl-desc { color: var(--charcoal-50); font-size: var(--fs-small); line-height: 1.6; }
+
+    /* Philosophy */
+    .phil-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    @media (max-width: 640px) { .phil-grid { grid-template-columns: 1fr; } }
+    .phil-card { padding: 2rem; text-align: center; }
+    .phil-card__icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+    .phil-card__title { font-family: 'DM Sans'; font-weight: 700; margin-bottom: 0.4rem; }
+    .phil-card__desc { color: var(--charcoal-50); font-size: var(--fs-small); line-height: 1.7; }
+
+    /* Vision */
+    .vision {
+      padding: clamp(2.5rem,4vw,3.5rem); background: var(--white);
+      border: 1px solid var(--charcoal-10); border-radius: var(--radius-xl); text-align: center;
+    }
+    .vision__title { font-size: var(--fs-h2); margin-bottom: 0.75rem; }
+    .vision__text { color: var(--charcoal-50); line-height: 1.8; max-width: 580px; margin: 0 auto 1.5rem; }
+    .vision__text strong { color: var(--charcoal); }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="container nav__inner">
+      <a href="index.html" class="nav__logo">Genatis</a>
+      <ul class="nav__links">
+        <li><a href="index.html" class="nav__link">Home</a></li>
+        <li><a href="features.html" class="nav__link">Features</a></li>
+        <li><a href="pricing.html" class="nav__link">Pricing</a></li>
+        <li><a href="founder.html" class="nav__link nav__link--active">About</a></li>
+        <li><a href="pricing.html#demo" class="nav__cta">Request Demo</a></li>
+      </ul>
+      <button class="nav__hamburger" id="nav-hamburger" aria-label="Toggle menu">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="container nav__mobile" id="nav-mobile">
+      <a href="index.html" class="nav__link">Home</a>
+      <a href="features.html" class="nav__link">Features</a>
+      <a href="pricing.html" class="nav__link">Pricing</a>
+      <a href="founder.html" class="nav__link nav__link--active">About</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="section" style="padding-bottom:0;">
+    <div class="container">
+      <div class="about-hero reveal">
+        <p class="section-label">Meet the Founder</p>
+        <h1 class="about-hero__name">Daksh</h1>
+        <p class="about-hero__role">Founder & Lead Developer, Genatis</p>
+        <p class="about-hero__tagline">"I didn't start Genatis to build a business. I started it because my teachers deserved better tools — and nobody was building them."</p>
+        <div class="about-hero__links">
+          <a href="mailto:hello@Genatis.in" class="about-link">✉ Email</a>
+          <a href="#" class="about-link">LinkedIn</a>
+          <a href="#" class="about-link">Twitter</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Story -->
+  <section class="section">
+    <div class="container">
+      <div class="story">
+
+        <div class="story-block reveal">
+          <p class="story-block__icon">🧑‍💻</p>
+          <h2 class="story-block__title">Who I am</h2>
+          <div class="story-block__text">
+            <p>I'm <strong>Daksh</strong> — a high school student, self-taught developer, and the person behind <strong>Genatis</strong>. I write code, design interfaces, and build products that solve real problems in education.</p>
+            <p>I started coding in middle school — first with HTML pages, then Python scripts, then full-stack apps. But the project that changed everything was the one I built for my own school.</p>
+          </div>
+        </div>
+
+        <div class="story-block reveal">
+          <p class="story-block__icon">💡</p>
+          <h2 class="story-block__title">Why I built Genatis</h2>
+          <div class="story-block__text">
+            <p>Every morning, I watched my teachers spend the first 10 minutes of class flipping through attendance registers, checking timetable printouts, and chasing students for homework diaries. <strong>It was chaos.</strong></p>
+            <p>Teachers were drowning in paperwork instead of teaching. Principals had no real-time data. Parents had no visibility. And students lost precious learning time every day.</p>
+            <p>I thought: <em>"What if there was one app — fast, clean, reliable — that replaced all of this?"</em></p>
+          </div>
+          <div class="pull-quote">
+            <p>"The best technology is the kind that disappears — it works so well that you forget it's there."</p>
+            <cite>— My design philosophy</cite>
+          </div>
+        </div>
+
+        <div class="story-block reveal">
+          <p class="story-block__icon">🛤️</p>
+          <h2 class="story-block__title">The journey</h2>
+          <div class="timeline">
+            <div class="tl-item">
+              <div class="tl-dot"></div>
+              <p class="tl-year">2024</p>
+              <p class="tl-title">The first version</p>
+              <p class="tl-desc">Built a basic timetable manager as a desktop app. Teachers loved the concept but wanted more.</p>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot"></div>
+              <p class="tl-year">2025</p>
+              <p class="tl-title">Attendance & analytics</p>
+              <p class="tl-desc">Added one-tap attendance, visual analytics, parent notifications, and a desktop widget.</p>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot"></div>
+              <p class="tl-year">2025</p>
+              <p class="tl-title">Parent portal & mobile app</p>
+              <p class="tl-desc">Built a full parent portal with real-time chat, notices, homework submissions, and a mobile app.</p>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot"></div>
+              <p class="tl-year">2026</p>
+              <p class="tl-title">Genatis is born</p>
+              <p class="tl-desc">Rebranded, redesigned, and launched as a platform for schools across India.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="story-block reveal">
+          <p class="story-block__icon">🏫</p>
+          <h2 class="story-block__title">My school experience</h2>
+          <div class="story-block__text">
+            <p>Being a student while building a school management platform gives me a unique advantage: <strong>I live in the problem.</strong> I sit in the classroom. I see what works and what doesn't. I hear the complaints.</p>
+            <p>My teachers became my first beta testers. My classmates became my focus group. My principal became my first critic. Every feature in Genatis was born from a real pain point I witnessed firsthand.</p>
+            <p>That's why Genatis doesn't feel like "enterprise software." It feels like something <strong>a teacher would actually want to use.</strong></p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Philosophy -->
+  <section class="section" style="background:var(--white);">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">Philosophy</p>
+        <h2 class="section-title">How I build products</h2>
+        <p class="section-subtitle">Three principles that guide every decision.</p>
+      </div>
+      <div class="phil-grid stagger">
+        <div class="phil-card card">
+          <p class="phil-card__icon">⚡</p>
+          <h3 class="phil-card__title">Speed is respect</h3>
+          <p class="phil-card__desc">Every second a teacher waits is a second stolen from students. Genatis must feel instant.</p>
+        </div>
+        <div class="phil-card card">
+          <p class="phil-card__icon">🎨</p>
+          <h3 class="phil-card__title">Design is function</h3>
+          <p class="phil-card__desc">Good design makes complex tasks feel simple. If it looks confusing, it is confusing.</p>
+        </div>
+        <div class="phil-card card">
+          <p class="phil-card__icon">🤝</p>
+          <h3 class="phil-card__title">Build with, not for</h3>
+          <p class="phil-card__desc">Every feature is co-created with teachers. I don't assume — I listen, observe, and iterate.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vision -->
+  <section class="section">
+    <div class="container">
+      <div class="vision reveal">
+        <p class="story-block__icon" style="font-size:2rem;">🌍</p>
+        <h2 class="vision__title">My vision for education</h2>
+        <p class="vision__text">I believe every school in India — whether it's a small-town primary school or a city institution — deserves access to thoughtful management tools. Not clunky enterprise software, but clean, fast technology that respects the people who use it.</p>
+        <p class="vision__text"><strong>Genatis is just the beginning.</strong> My mission is to build a world where teachers focus entirely on teaching, parents stay connected, and students get the attention they deserve.</p>
+        <a href="pricing.html#demo" class="btn btn--primary">Join the mission →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__grid">
+        <div><p class="footer__brand-name">Genatis</p><p class="footer__brand-desc">Built by students, for students. Simplifying education, one school at a time.</p></div>
+        <div><p class="footer__col-title">Product</p><ul class="footer__links"><li><a href="features.html" class="footer__link">Features</a></li><li><a href="pricing.html" class="footer__link">Pricing</a></li></ul></div>
+        <div><p class="footer__col-title">Company</p><ul class="footer__links"><li><a href="founder.html" class="footer__link">About</a></li><li><a href="mailto:hello@Genatis.in" class="footer__link">Contact</a></li></ul></div>
+        <div><p class="footer__col-title">Resources</p><ul class="footer__links"><li><a href="quick-start.html" class="footer__link">Quick Start</a></li><li><a href="mailto:support@Genatis.in" class="footer__link">Support</a></li></ul></div>
+      </div>
+      <div class="footer__bottom">
+        <p class="footer__copy">© 2026 Genatis. Made in India.</p>
+        <div class="footer__socials"><a href="#" class="footer__social" aria-label="Twitter">𝕏</a><a href="#" class="footer__social" aria-label="LinkedIn">in</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
+
+

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing — Genatis</title>
+  <meta name="description" content="Transparent pricing for Genatis. Choose Basic, Standard, or Premium. Free 14-day trial included.">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .page-hero { padding: clamp(7rem,11vw,9rem) 0 clamp(1.5rem,3vw,2.5rem); text-align: center; }
+    .page-hero__headline { font-size: var(--fs-h1); margin-bottom: 0.75rem; }
+    .page-hero__sub { color: var(--charcoal-50); max-width: 480px; margin: 0 auto; line-height: 1.75; }
+
+    /* Toggle */
+    .toggle-wrap { display: flex; align-items: center; justify-content: center; gap: 0.6rem; margin: 2rem 0 0.5rem; }
+    .toggle-label { font-size: var(--fs-small); color: var(--warm-gray); font-weight: 500; transition: var(--transition); }
+    .toggle-label--active { color: var(--charcoal); font-weight: 600; }
+    .toggle {
+      width: 48px; height: 26px; border-radius: 13px; background: var(--cream-dark);
+      border: 1px solid var(--charcoal-10); position: relative; cursor: pointer; transition: var(--transition);
+    }
+    .toggle::after {
+      content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
+      border-radius: 50%; background: var(--terracotta); transition: transform var(--transition);
+    }
+    .toggle.annual::after { transform: translateX(22px); }
+    .toggle.annual { border-color: var(--terracotta); }
+    .save-tag { font-size: var(--fs-xs); font-weight: 600; color: var(--terracotta); background: var(--terracotta-bg); padding: 0.15rem 0.5rem; border-radius: var(--radius-full); }
+
+    /* Cards */
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; align-items: start; }
+    @media (max-width: 840px) { .pricing-grid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; } }
+    .pricing-card { padding: 2.25rem; display: flex; flex-direction: column; gap: 1.25rem; }
+    .pricing-card__tier { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; color: var(--warm-gray); }
+    .pricing-card__price { display: flex; align-items: baseline; gap: 0.25rem; }
+    .pricing-card__amount { font-family: 'DM Serif Display', serif; font-size: 2.5rem; color: var(--charcoal); }
+    .pricing-card__period { font-size: var(--fs-small); color: var(--warm-gray); }
+    .pricing-card__desc { color: var(--charcoal-50); font-size: var(--fs-small); line-height: 1.6; }
+    .pricing-card__features { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; flex: 1; }
+    .pricing-card__feature { display: flex; align-items: center; gap: 0.55rem; font-size: var(--fs-small); color: var(--charcoal-70); }
+    .p-check { flex-shrink: 0; font-size: 0.8rem; }
+    .p-check--yes { color: var(--terracotta); }
+    .p-check--no { color: var(--charcoal-30); }
+    .pricing-card__cta { margin-top: auto; }
+    .pricing-popular .pricing-card__amount { color: var(--terracotta); }
+
+    /* Addons */
+    .addons-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+    .addon { padding: 1.5rem; display: flex; gap: 0.85rem; align-items: flex-start; }
+    .addon__icon { font-size: 1.3rem; }
+    .addon__title { font-weight: 600; margin-bottom: 0.2rem; }
+    .addon__desc { color: var(--charcoal-50); font-size: var(--fs-small); line-height: 1.6; }
+    .addon__price { margin-top: 0.4rem; font-weight: 600; color: var(--terracotta); font-size: var(--fs-small); }
+
+    /* FAQ */
+    .faq-list { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.6rem; }
+    .faq { border-radius: var(--radius-md); overflow: hidden; cursor: pointer; }
+    .faq__q { padding: 1.1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: var(--fs-body); }
+    .faq__arrow { transition: transform var(--transition); font-size: 0.7rem; color: var(--warm-gray); }
+    .faq.open .faq__arrow { transform: rotate(180deg); }
+    .faq__a { max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding 0.25s ease; padding: 0 1.25rem; color: var(--charcoal-50); font-size: var(--fs-small); line-height: 1.7; }
+    .faq.open .faq__a { max-height: 180px; padding: 0 1.25rem 1.1rem; }
+
+    /* Demo form */
+    .demo-form { max-width: 440px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.75rem; }
+    .demo-form input, .demo-form select {
+      width: 100%; padding: 0.75rem 1rem; border-radius: var(--radius-md);
+      background: var(--white); border: 1px solid var(--charcoal-10);
+      color: var(--charcoal); font-family: inherit; font-size: var(--fs-body); transition: border-color var(--transition);
+    }
+    .demo-form input:focus, .demo-form select:focus { outline: none; border-color: var(--terracotta); }
+    .demo-form input::placeholder { color: var(--charcoal-30); }
+    .demo-form select { appearance: none; cursor: pointer; color: var(--charcoal-50); }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="container nav__inner">
+      <a href="index.html" class="nav__logo">Genatis</a>
+      <ul class="nav__links">
+        <li><a href="index.html" class="nav__link">Home</a></li>
+        <li><a href="features.html" class="nav__link">Features</a></li>
+        <li><a href="pricing.html" class="nav__link nav__link--active">Pricing</a></li>
+        <li><a href="founder.html" class="nav__link">About</a></li>
+        <li><a href="#demo" class="nav__cta">Request Demo</a></li>
+      </ul>
+      <button class="nav__hamburger" id="nav-hamburger" aria-label="Toggle menu">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="container nav__mobile" id="nav-mobile">
+      <a href="index.html" class="nav__link">Home</a>
+      <a href="features.html" class="nav__link">Features</a>
+      <a href="pricing.html" class="nav__link nav__link--active">Pricing</a>
+      <a href="founder.html" class="nav__link">About</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="page-hero">
+    <div class="container reveal">
+      <p class="section-label">Pricing</p>
+      <h1 class="page-hero__headline">Simple plans, <em>transparent pricing.</em></h1>
+      <p class="page-hero__sub">Every plan includes a free 14-day trial and dedicated onboarding. No surprises.</p>
+      <div class="toggle-wrap">
+        <span class="toggle-label" id="monthly-label">Monthly</span>
+        <div class="toggle annual" id="billing-toggle" role="switch" aria-checked="true"></div>
+        <span class="toggle-label toggle-label--active" id="annual-label">Annual</span>
+        <span class="save-tag">Save 20%</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing cards -->
+  <section class="section" style="padding-top:1.5rem;">
+    <div class="container">
+      <div class="pricing-grid stagger">
+
+        <!-- Core -->
+        <div class="pricing-card card">
+          <p class="pricing-card__tier">Genatis Core</p>
+          <div class="pricing-card__price">
+            <span class="pricing-card__amount" data-monthly="₹10,000" data-annual="₹96,000">₹96,000</span>
+            <span class="pricing-card__period" data-monthly="/month" data-annual="/year">/year</span>
+          </div>
+          <p class="pricing-card__desc">Complete core suite: Genatis Board, Command, Staff, and Home apps for your entire school.</p>
+          <ul class="pricing-card__features">
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> All 4 Built-In Core Apps</li>
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> Smartboard Whiteboard & PDF Annotator</li>
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> 1-Click Admin CSV Roster Import</li>
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> Live Daily Attendance Telemetry</li>
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> Parent App & Scoped Teacher Chat</li>
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> School Bulletins & Emergency Broadcasts</li>
+            <li class="pricing-card__feature"><span class="p-check p-check--no">—</span> <span style="color:var(--charcoal-30)">AI Academic Digest & Pacing</span></li>
+            <li class="pricing-card__feature"><span class="p-check p-check--no">—</span> <span style="color:var(--charcoal-30)">Gradebook & Report Cards</span></li>
+          </ul>
+          <div class="pricing-card__cta">
+            <a href="#demo" class="btn btn--outline w-full" style="width:100%;justify-content:center;">Apply for 30-Day Free Pilot</a>
+          </div>
+        </div>
+
+        <!-- Academic Pro -->
+        <div class="pricing-card card pricing-popular">
+          <p class="pricing-card__tier">Academic Pro</p>
+          <div class="pricing-card__price">
+            <span class="pricing-card__amount" data-monthly="₹15,000" data-annual="₹1,44,000">₹1,44,000</span>
+            <span class="pricing-card__period" data-monthly="/month" data-annual="/year">/year</span>
+          </div>
+          <p class="pricing-card__desc">The most popular choice — includes AI parent summaries, pacing guardrails, and gradebook.</p>
+          <ul class="pricing-card__features">
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> Everything in Genatis Core</li>
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> 🤖 AI Parent Weekly Progress Digest</li>
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> 🤖 Curriculum Pacing Guardrail</li>
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> 📝 Gradebook & 1-Click PDF Report Cards</li>
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> ⭐ Smartboard Merits & PBIS Badges</li>
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> Priority Onboarding & Training</li>
+            <li class="pricing-card__feature"><span class="p-check p-check--no">—</span> <span style="color:var(--charcoal-30)">Live Bus GPS Tracking</span></li>
+          </ul>
+          <div class="pricing-card__cta">
+            <a href="#demo" class="btn btn--primary w-full" style="width:100%;justify-content:center;">Start Free 30-Day Pilot</a>
+          </div>
+        </div>
+
+        <!-- Enterprise All-Access -->
+        <div class="pricing-card card">
+          <p class="pricing-card__tier">Enterprise All-Access</p>
+          <div class="pricing-card__price">
+            <span class="pricing-card__amount" data-monthly="₹22,000" data-annual="₹2,11,200">₹2,11,200</span>
+            <span class="pricing-card__period" data-monthly="/month" data-annual="/year">/year</span>
+          </div>
+          <p class="pricing-card__desc">Full access to all built-in apps, security packs, transport fleet tracking, and Genatis Pay.</p>
+          <ul class="pricing-card__features">
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> Everything in Academic Pro</li>
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> 🛡️ SafeSchool SOS Panic Button</li>
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> 🛡️ Gatekeeper QR Early Checkout</li>
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> 🚌 Live Bus GPS & Fleet Manifest</li>
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> 💳 Genatis Pay & Tuition Portal</li>
+            <li class="pricing-card__feature"><span class="p-check p-check--yes">✓</span> Google Workspace Domain Locking</li>
+          </ul>
+          <div class="pricing-card__cta">
+            <a href="#demo" class="btn btn--outline w-full" style="width:100%;justify-content:center;">Contact Sales</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Add-ons -->
+  <section class="section" style="background:var(--white);">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">Add-ons</p>
+        <h2 class="section-title">Customize your plan</h2>
+        <p class="section-subtitle">Need something extra? Add premium features to any plan.</p>
+      </div>
+      <div class="addons-grid stagger">
+        <div class="addon card"><span class="addon__icon">📱</span><div><p class="addon__title">Parent Portal App</p><p class="addon__desc">Branded mobile app for parents with notices, attendance, and chat.</p><p class="addon__price">+₹8,000/year</p></div></div>
+        <div class="addon card"><span class="addon__icon">💾</span><div><p class="addon__title">Extra Storage</p><p class="addon__desc">Add 10 GB of cloud storage for resources and homework.</p><p class="addon__price">+₹3,000/year</p></div></div>
+        <div class="addon card"><span class="addon__icon">🎨</span><div><p class="addon__title">Custom Branding</p><p class="addon__desc">Your school logo, colors, and name across the platform.</p><p class="addon__price">+₹5,000/year</p></div></div>
+        <div class="addon card"><span class="addon__icon">📞</span><div><p class="addon__title">SMS Notifications</p><p class="addon__desc">Automated SMS alerts for attendance, homework, and notices.</p><p class="addon__price">+₹4,000/year</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label">FAQ</p>
+        <h2 class="section-title">Common questions</h2>
+      </div>
+      <div class="faq-list reveal">
+        <div class="faq card" onclick="this.classList.toggle('open')">
+          <div class="faq__q">Is there a free trial?<span class="faq__arrow">▼</span></div>
+          <div class="faq__a">Yes — every plan includes a full-featured 14-day trial. No credit card required.</div>
+        </div>
+        <div class="faq card" onclick="this.classList.toggle('open')">
+          <div class="faq__q">Can we switch plans later?<span class="faq__arrow">▼</span></div>
+          <div class="faq__a">Absolutely. Upgrade or downgrade anytime. We prorate the difference. No lock-in.</div>
+        </div>
+        <div class="faq card" onclick="this.classList.toggle('open')">
+          <div class="faq__q">Discounts for government schools?<span class="faq__arrow">▼</span></div>
+          <div class="faq__a">Yes. We offer special pricing for government and rural schools. Contact us for a custom quote.</div>
+        </div>
+        <div class="faq card" onclick="this.classList.toggle('open')">
+          <div class="faq__q">What happens to our data if we cancel?<span class="faq__arrow">▼</span></div>
+          <div class="faq__a">Your data stays accessible for 30 days after cancellation. You can export as CSV/PDF anytime.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo form -->
+  <section class="section" id="demo" style="background:var(--white);">
+    <div class="container">
+      <div class="reveal" style="max-width:500px; margin:0 auto; text-align:center;">
+        <p class="section-label">Request a Demo</p>
+        <h2 class="section-title" style="font-size:var(--fs-h2);">Let's talk about your school</h2>
+        <p class="section-subtitle mx-auto mb-3" style="font-size:var(--fs-small);">Fill in the form and we'll reach out within 24 hours.</p>
+        <form class="demo-form" onsubmit="event.preventDefault(); this.innerHTML='<p style=\'padding:2rem; color:var(--terracotta); font-weight:600;\'>Thank you! We\'ll be in touch within 24 hours.</p>';">
+          <input type="text" placeholder="Your Name *" required id="demo-name">
+          <input type="text" placeholder="School Name *" required id="demo-school">
+          <input type="email" placeholder="Email Address *" required id="demo-email">
+          <input type="tel" placeholder="Phone Number" id="demo-phone">
+          <select id="demo-size"><option value="" disabled selected>School Size</option><option>Up to 200 students</option><option>200–800 students</option><option>800+ students</option></select>
+          <select id="demo-plan" required><option value="" disabled selected>Interested Plan *</option><option value="Genatis Core — ₹10,000/mo">Genatis Core — ₹10,000/mo</option><option value="Academic Pro — ₹15,000/mo">Academic Pro — ₹15,000/mo</option><option value="Enterprise All-Access — ₹22,000/mo">Enterprise All-Access — ₹22,000/mo</option><option value="Not sure yet">Not sure yet</option></select>
+          <button type="submit" id="demo-submit-btn" class="btn btn--primary w-full" style="width:100%;justify-content:center;">Submit Request</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__grid">
+        <div><p class="footer__brand-name">Genatis</p><p class="footer__brand-desc">Built by students, for students. Simplifying education, one school at a time.</p></div>
+        <div><p class="footer__col-title">Product</p><ul class="footer__links"><li><a href="features.html" class="footer__link">Features</a></li><li><a href="pricing.html" class="footer__link">Pricing</a></li></ul></div>
+        <div><p class="footer__col-title">Company</p><ul class="footer__links"><li><a href="founder.html" class="footer__link">About</a></li><li><a href="mailto:hello@Genatis.in" class="footer__link">Contact</a></li></ul></div>
+        <div><p class="footer__col-title">Resources</p><ul class="footer__links"><li><a href="quick-start.html" class="footer__link">Quick Start</a></li><li><a href="mailto:support@Genatis.in" class="footer__link">Support</a></li></ul></div>
+      </div>
+      <div class="footer__bottom">
+        <p class="footer__copy">© 2026 Genatis. Made in India.</p>
+        <div class="footer__socials"><a href="#" class="footer__social" aria-label="Twitter">𝕏</a><a href="#" class="footer__social" aria-label="LinkedIn">in</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+  <script>
+    const toggle = document.getElementById('billing-toggle');
+    const mLabel = document.getElementById('monthly-label');
+    const aLabel = document.getElementById('annual-label');
+    const amounts = document.querySelectorAll('.pricing-card__amount');
+    const periods = document.querySelectorAll('.pricing-card__period');
+    toggle.addEventListener('click', () => {
+      const annual = toggle.classList.toggle('annual');
+      mLabel.classList.toggle('toggle-label--active', !annual);
+      aLabel.classList.toggle('toggle-label--active', annual);
+      amounts.forEach(el => el.textContent = annual ? el.dataset.annual : el.dataset.monthly);
+      periods.forEach(el => el.textContent = annual ? el.dataset.annual : el.dataset.monthly);
+    });
+  </script>
+
+  <!-- Firebase Integration for Lead Collection -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA0kxK-DTY4sGZ4BKVRQ0ADaLzCRJaJBt4",
+      authDomain: "classpoint-2.firebaseapp.com",
+      projectId: "classpoint-2",
+      storageBucket: "classpoint-2.appspot.com",
+      messagingSenderId: "798509953266",
+      appId: "1:798509953266:web:f133ac64e68b54bba4a06b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const demoForm = document.querySelector('.demo-form');
+    if (demoForm) {
+      demoForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = document.getElementById('demo-submit-btn');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Submitting...';
+        }
+
+        const name = document.getElementById('demo-name')?.value || '';
+        const school = document.getElementById('demo-school')?.value || '';
+        const email = document.getElementById('demo-email')?.value || '';
+        const phone = document.getElementById('demo-phone')?.value || '';
+        const schoolSize = document.getElementById('demo-size')?.value || '';
+        const interestedPlan = document.getElementById('demo-plan')?.value || '';
+
+        try {
+          await addDoc(collection(db, 'demo_requests'), {
+            name,
+            school,
+            email,
+            phone,
+            schoolSize,
+            interestedPlan,
+            createdAt: new Date().toISOString(),
+            status: 'new'
+          });
+
+          demoForm.innerHTML = `<div style="padding:2.5rem 1.5rem; text-align:center; background:var(--terracotta-bg); border-radius:var(--radius-lg); border:1px solid var(--terracotta); margin-top:1rem;">
+            <p style="font-size:1.25rem; font-weight:700; color:var(--terracotta); margin-bottom:0.5rem;">🎉 Demo Request Received!</p>
+            <p style="color:var(--charcoal-50); font-size:0.9rem;">Thank you, ${name}! Our team will reach out to you at <strong>${email}</strong> within 24 hours.</p>
+          </div>`;
+        } catch (err) {
+          console.error('Error saving demo request:', err);
+          alert('Failed to submit demo request. Please try again or email us directly.');
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Request';
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+
+

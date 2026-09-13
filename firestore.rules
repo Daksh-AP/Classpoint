@@ -2,41 +2,175 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Users can read and write their own timetable.
-    match /timetables/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    function isAuthenticated() {
+      return request.auth != null;
     }
 
-    // Users can read and write their own settings.
-    match /user_settings/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    function getUserDoc() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data
+        : (request.auth.token.email != null && exists(/databases/$(database)/documents/users/$(request.auth.token.email.lower()))
+            ? get(/databases/$(database)/documents/users/$(request.auth.token.email.lower())).data
+            : {});
     }
 
-    // Users can manage their own subcollections (students, attendance).
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    function isBoard() {
+      return isAuthenticated() && (
+        getUserDoc().role == 'board' || 
+        (request.auth.token.email != null && request.auth.token.email.matches('.*board.*'))
+      );
     }
 
-    // Smartboard rules remain unchanged.
-    match /smartboards/{smartboardId} {
-      allow read, update, delete: if request.auth != null && resource.data.ownerUid == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
+    function isTeacher() {
+      return isAuthenticated() && !isBoard();
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        getUserDoc().role in ['admin', 'superadmin', 'coordinator'] ||
+        (request.auth.token.email != null && (
+          request.auth.token.email.lower() == 'teacher@school.edu' ||
+          (exists(/databases/$(database)/documents/users/$(request.auth.token.email.lower())) &&
+           get(/databases/$(database)/documents/users/$(request.auth.token.email.lower())).data.role in ['admin', 'superadmin', 'coordinator'])
+        ))
+      );
+    }
+
+    function belongsToSchool(schoolId) {
+      return getUserDoc().schoolId == schoolId || getUserDoc().schoolId == null || schoolId == 'default_school';
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update, write: if isAuthenticated() && (isAdmin() || (isTeacher() && request.auth.token.email.lower() == userId));
+    }
+
+    match /schools/{schoolId} {
+      allow read: if isAuthenticated() && belongsToSchool(schoolId);
+      allow write: if isAdmin() || belongsToSchool(schoolId);
+
+      match /{document=**} {
+        allow read: if isAuthenticated() && belongsToSchool(schoolId);
+        allow write: if isAdmin();
+      }
+
+      match /timetables/{document=**} {
+        allow read, write: if isAuthenticated() && (isTeacher() || isBoard() || isAdmin() || belongsToSchool(schoolId));
+      }
+
+      match /user_settings/{userId} {
+        allow read, write: if isAuthenticated() && (request.auth.uid == userId || isAdmin() || isBoard() || isTeacher());
+      }
+
+      match /smartboards/{smartboardId} {
+        allow read, write: if isAuthenticated() && (isTeacher() || isBoard() || isAdmin() || belongsToSchool(schoolId));
+      }
+
+      match /grades/{gradeId} {
+        allow read, write: if isAuthenticated() && (isAdmin() || (isTeacher() && belongsToSchool(schoolId)));
+
+        match /{document=**} {
+          allow read, write: if isAuthenticated() && (isAdmin() || (isTeacher() && belongsToSchool(schoolId)));
+        }
+      }
+
+      match /users/{userId} {
+        allow read, write: if isAuthenticated() && (isAdmin() || belongsToSchool(schoolId));
+      }
+
+      match /parentChats/{chatId} {
+        allow read, write: if isAuthenticated() && belongsToSchool(schoolId);
+        match /messages/{messageId} {
+          allow read, write: if isAuthenticated() && belongsToSchool(schoolId);
+        }
+      }
+
+      match /parentAccounts/{document=**} {
+        allow read, write: if isAuthenticated() && (isAdmin() || belongsToSchool(schoolId));
+      }
+      
+      match /lessonEntries/{docId} {
+        allow write: if isAdmin() || (isTeacher() && belongsToSchool(schoolId));
+      }
+
+      match /subjectStates/{docId} {
+        allow write: if isAdmin() || (isTeacher() && belongsToSchool(schoolId));
+      }
+
+      match /announcements/{announcementId} {
+        allow write: if isTeacher() && belongsToSchool(schoolId);
+      }
+
+      match /bulletins/{bulletinId} {
+        allow read: if isAuthenticated() && belongsToSchool(schoolId);
+        allow write: if (isAdmin() || isTeacher()) && belongsToSchool(schoolId);
+      }
+
+      match /alerts/{alertId} {
+        allow read: if isAuthenticated() && belongsToSchool(schoolId);
+        allow write: if (isAdmin() || isTeacher()) && belongsToSchool(schoolId);
+      }
+
+      match /shared_files/{fileId} {
+        allow write: if isTeacher() && belongsToSchool(schoolId);
+      }
+
+      match /audit_logs/{logId} {
+        allow create: if isTeacher() && belongsToSchool(schoolId);
+      }
+
+      match /deletedLogAudit/{logId} {
+        allow create: if isTeacher() && belongsToSchool(schoolId);
+        allow read, write: if isAdmin() || (isTeacher() && belongsToSchool(schoolId));
+      }
+
+      match /AbsenceImpactEvents/{eventId} {
+        allow write: if isTeacher() && belongsToSchool(schoolId);
+      }
+      
+      match /SessionSummaries/{summaryId} {
+        allow write: if isTeacher() && belongsToSchool(schoolId);
+      }
+      
+      match /CurriculumNodes/{nodeId} {
+        allow write: if isTeacher() && belongsToSchool(schoolId);
+      }
+      
+      match /substitutions/{subId} {
+        allow read: if true;
+        allow write: if isAdmin() && belongsToSchool(schoolId);
+      }
     }
     
-    // Public school data remains readable by authenticated users.
-    match /schoolData/{document=**} {
-      allow read, write: if true;
+    match /{path=**}/students/{studentId} {
+      allow read: if isAuthenticated() && belongsToSchool(resource.data.schoolId);
+      allow write: if isAuthenticated() && (isAdmin() || isTeacher());
     }
 
-    // Announcements can be read and created by any authenticated user.
-    match /announcements/{announcementId} {
-      allow read, create: if request.auth != null;
+    match /{path=**}/attendance/{dateKey} {
+      allow read: if isAuthenticated() && belongsToSchool(resource.data.schoolId);
+      allow write: if isAuthenticated() && (isAdmin() || isTeacher());
     }
 
-    // One-time pins can be created by authenticated users and read by anyone.
+    match /schoolStats/{statId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
     match /one_time_pins/{pin} {
-      allow read, create: if request.auth != null;
+      allow create: if isTeacher() || isAdmin();
+    }
+
+    match /demo_requests/{leadId} {
+      allow create, read, update, delete: if true;
+    }
+
+    match /timetables/{timetableId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /user_settings/{userId} {
+      allow read, write: if isAuthenticated() && (request.auth.uid == userId || isAdmin() || isBoard() || isTeacher());
     }
   }
 }

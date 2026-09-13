@@ -1,13 +1,7 @@
-# ClassPoint Installation Guide
+## 🚀 Installation Guide
 
-## 🚀 Quick Start Options
+### Install from Source Code
 
-### Option 1: Download Pre-built Executable (Recommended)
-1. Go to [Releases](https://github.com/Windows-Concept/ClassPoint/releases)
-2. Download the latest installer or portable version
-3. Run the installer or extract and run the portable version
-
-### Option 2: Install from Source Code
 
 #### Prerequisites
 - **Node.js** (v16 or higher) - [Download here](https://nodejs.org/)

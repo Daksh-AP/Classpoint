@@ -2,6 +2,13 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 console.log('[MAIN] electron.cjs loaded');
+// Lock internal rasterization to 1080p (scale factor 1.0) to prevent 4K fill-rate stutter & pen lag
+app.commandLine.appendSwitch('high-dpi-support', '1');
+app.commandLine.appendSwitch('force-device-scale-factor', '1');
+app.commandLine.appendSwitch('enable-gpu-rasterization');
+app.commandLine.appendSwitch('enable-zero-copy');
+app.commandLine.appendSwitch('ignore-gpu-blocklist');
+
 const isDev = process.env.NODE_ENV === 'development' || process.defaultApp || /[\\/]electron-prebuilt[\\/]/.test(process.execPath) || /[\\/]electron[\\/]/.test(process.execPath);
 
 let mainWindow;
@@ -13,10 +20,10 @@ function createMainWindow() {
     height: 1080,
     webPreferences: {
       zoomFactor: 1.0,
-      nodeIntegration: true,
-      contextIsolation: false,
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
       webSecurity: !isDev,
-      webviewTag: true,
     },
     show: false,
   });
@@ -54,8 +61,9 @@ function createOverlayWindow() {
     skipTaskbar: false,
     resizable: false,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
     },
   });
 
@@ -130,6 +138,37 @@ ipcMain.handle('update-widget-position', (event, { x, y }) => {
 ipcMain.handle('set-widget-size', (event, { width, height }) => {
   if (overlayWindow) {
     overlayWindow.setSize(width, height);
+  }
+});
+
+ipcMain.on('set-start-on-login', (event, startOnLogin) => {
+  app.setLoginItemSettings({
+    openAtLogin: startOnLogin,
+    path: app.getPath('exe')
+  });
+});
+
+ipcMain.handle('save-file', async (event, { dataUrl, payloadPath }) => {
+  try {
+    const dir = path.dirname(payloadPath);
+    const ext = path.extname(payloadPath);
+    const name = path.basename(payloadPath, ext);
+    const newPath = path.join(dir, `${name}-annotated-${Date.now()}${ext}`);
+    const base64Data = dataUrl.replace(/^data:image\/\w+;base64,/, "");
+    fs.writeFileSync(newPath, base64Data, 'base64');
+    return { success: true, path: newPath };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('open-path', async (event, filePath) => {
+  const { shell } = require('electron');
+  try {
+    await shell.openPath(filePath);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
   }
 });
 

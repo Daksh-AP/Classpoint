@@ -1,21 +1,120 @@
 /* stylelint-disable at-rule-no-unknown */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════
+   DESIGN TOKENS — Light Mode (Warm Minimal Zen)
+   ═══════════════════════════════════════════════ */
+:root {
+  /* Color */
+  --bg: #FCFCF9;
+  --bg-secondary: #F6F4F0;
+  --surface: #F1EFEB;
+  --surface-hover: #E8E5E1;
+  --border: rgba(62, 62, 60, 0.08);
+  --border-hover: rgba(62, 62, 60, 0.15);
+  --text-primary: #3E3E3C;
+  --text-secondary: #6A6A6A;
+  --text-muted: #999999;
+  --accent: #BA5D3E;
+  --accent-hover: #A55030;
+  --accent-soft: rgba(186, 93, 62, 0.15);
+  --accent-glow: rgba(186, 93, 62, 0.3);
+  --success: #2e7d32;
+  --error: #c62828;
+  --warning: #f57c00;
+  --danger: #ef4444;
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-modal-bg: rgba(252, 252, 249, 0.94);
+  --glass-modal-border: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(62, 62, 60, 0.08);
+  --shadow: rgba(0, 0, 0, 0.08);
+  --scrollbar-thumb: rgba(186, 93, 62, 0.40);
+
+  /* Typography */
+  --font-sans: 'Inter', 'Noto Sans JP', system-ui, sans-serif;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* Motion */
+  --motion-fast: 120ms;
+  --motion-medium: 200ms;
+  --motion-slow: 320ms;
+  --ease-zen: cubic-bezier(0.25, 1, 0.5, 1);
+
+  /* Radius */
+  --radius-small: 8px;
+  --radius-card: 12px;
+  --radius-pill: 9999px;
+  --radius-full: 9999px;
+
+  /* Elevation */
+  --elevation-0: none;
+  --elevation-1: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   DESIGN TOKENS — Dark Mode (Midnight Zen - Synced with Admin Portal)
+   ════════════════════════════════════════════════════════════════════ */
+[data-theme="dark"], :root.dark, html.dark, .dark {
+  --bg: #121212;
+  --bg-secondary: #1A1A1A;
+  --surface: #1E1E1E;
+  --surface-hover: #2A2A2A;
+  --border: rgba(255, 255, 255, 0.1);
+  --border-hover: rgba(255, 255, 255, 0.2);
+  --text-primary: #F5F5F5;
+  --text-secondary: #A0A0A0;
+  --text-muted: #777777;
+  --accent: #E07A5F;
+  --accent-hover: #FF8A6F;
+  --accent-soft: rgba(224, 122, 95, 0.15);
+  --accent-glow: rgba(224, 122, 95, 0.3);
+  --success: #4caf50;
+  --error: #f44336;
+  --warning: #ff9800;
+  --danger: #ef4444;
+  --glass-bg: rgba(30, 30, 30, 0.75);
+  --glass-modal-bg: rgba(22, 24, 28, 0.94);
+  --glass-modal-border: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --radius-pill: 9999px;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --scrollbar-thumb: rgba(224, 122, 95, 0.40);
+  
+  --elevation-1: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* ═══════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════ */
 @layer base {
+  * {
+    box-sizing: border-box;
+  }
+
   body {
-    @apply font-sans text-slate-100 antialiased;
-    background-color: #030014;
-    background-image:
-      radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(14, 165, 233, 0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, rgba(14, 165, 233, 0.15) 0px, transparent 50%);
-    background-attachment: fixed;
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background-color: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color var(--motion-slow) var(--ease-zen),
+      color var(--motion-slow) var(--ease-zen);
   }
 
   h1,
@@ -24,65 +123,331 @@
   h4,
   h5,
   h6 {
-    @apply font-display tracking-tight;
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    color: var(--text-secondary);
   }
 }
 
+/* ═══════════════════════════════════════════════
+   TYPOGRAPHY CLASSES
+   ═══════════════════════════════════════════════ */
 @layer components {
-  .glass-card {
-    @apply bg-dark-card border border-dark-border shadow-xl rounded-2xl;
-    /* Reduced blur for performance */
-    backdrop-filter: blur(4px); 
-    -webkit-backdrop-filter: blur(4px);
-    /* Slightly more opaque background to compensate for less blur */
-    background-color: rgba(30, 41, 59, 0.7); 
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    /* transform: translateZ(0); - Removed to test if it helps with memory/glitching */
-    /* will-change: transform; */
+
+  .text-h1 {
+    font-size: 2.5rem;
+    line-height: 1.15;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
   }
 
-  .glass-button {
-    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-white/10 hover:bg-white/15 border border-white/10 hover:border-white/20 active:scale-95;
-    /* backdrop-filter: blur(4px); - Removed for performance on buttons */
-    /* -webkit-backdrop-filter: blur(4px); */
+  .text-h2 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
   }
 
-  .glass-input {
-    @apply bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/30 focus:outline-none focus:border-primary-500/50 focus:ring-2 focus:ring-primary-500/20 transition-all;
+  .text-h3 {
+    font-size: 1.125rem;
+    line-height: 1.4;
+    font-weight: 500;
+    color: var(--text-primary);
   }
 
-  .nav-item {
-    @apply flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-400 hover:text-white hover:bg-white/5;
+  .text-body {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    font-weight: 400;
+    color: var(--text-primary);
   }
 
-  .nav-item.active {
-    @apply bg-primary-600/20 text-primary-300 border border-primary-500/20;
+  .text-small {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    font-weight: 400;
+    color: var(--text-secondary);
   }
 
+  .text-label {
+    font-size: 0.75rem;
+    line-height: 1;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  /* ═══════════════════════════════════════════════
+     ZEN CARD — Glassmorphism (hero/modal ONLY)
+     ═══════════════════════════════════════════════ */
+  .zen-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--elevation-1);
+    transition: box-shadow var(--motion-medium) var(--ease-zen),
+      transform var(--motion-medium) var(--ease-zen);
+  }
+
+  .zen-card:hover {
+    box-shadow: 0 8px 32px var(--shadow);
+    transform: translateY(-1px);
+  }
+
+  /* ═══════════════════════════════════════════════
+     ZEN MODAL CARD — Frosted glass dialog surface
+     ═══════════════════════════════════════════════ */
+  .zen-modal-card {
+    background: var(--glass-modal-bg);
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    border: 1px solid var(--glass-modal-border);
+    border-radius: 24px;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--glass-modal-border) inset;
+    transition: all var(--motion-medium) var(--ease-zen);
+  }
+
+  /* ═══════════════════════════════════════════════
+     ZEN CARD FLAT — Non-blur surface (lists/rows)
+     ═══════════════════════════════════════════════ */
+  .zen-card-flat {
+    background: var(--surface);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-card);
+    transition: background var(--motion-fast) var(--ease-zen);
+  }
+
+  .zen-card-flat:hover {
+    background: var(--glass-bg);
+  }
+
+  /* ═══════════════════════════════════════════════
+     ZEN BUTTON — Pill shape, premium feel
+     ═══════════════════════════════════════════════ */
+  .zen-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: 10px 24px;
+    border-radius: var(--radius-pill, 9999px);
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    color: var(--text-primary);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px var(--shadow);
+    cursor: pointer;
+    transition: all var(--motion-fast) var(--ease-zen);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .zen-btn:hover {
+    box-shadow: 0 4px 16px var(--shadow);
+    transform: translateY(-1px);
+    background: var(--surface-hover);
+  }
+
+  .zen-btn:active {
+    transform: scale(0.97);
+    box-shadow: 0 1px 4px var(--shadow);
+  }
+
+  .zen-btn-accent {
+    background: var(--accent);
+    color: #FFFFFF;
+    border-color: transparent;
+    box-shadow: 0 3px 12px var(--accent-glow);
+  }
+
+  .zen-btn-accent:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 5px 18px var(--accent-glow);
+    filter: brightness(1.05);
+  }
+
+  /* ═══════════════════════════════════════════════
+     ZEN INPUT
+     ═══════════════════════════════════════════════ */
+  .zen-input {
+    width: 100%;
+    padding: 12px var(--space-md);
+    border-radius: var(--radius-card);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 0.9375rem;
+    color: var(--text-primary);
+    background: var(--surface);
+    border: 1px solid var(--glass-border);
+    outline: none;
+    transition: border-color var(--motion-fast) var(--ease-zen),
+      box-shadow var(--motion-fast) var(--ease-zen);
+  }
+
+  .zen-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+  }
+
+  .zen-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(138, 99, 67, 0.15);
+  }
+
+  /* ═══════════════════════════════════════════════
+     ZEN LABEL
+     ═══════════════════════════════════════════════ */
+  .zen-label {
+    font-size: 0.75rem;
+    line-height: 1;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  /* ═══════════════════════════════════════════════
+     APP BACKGROUND
+     ═══════════════════════════════════════════════ */
   .app-background {
-    @apply min-h-screen;
+    min-height: 100vh;
+    background-color: var(--bg);
+    transition: background-color var(--motion-slow) var(--ease-zen);
   }
 }
 
-/* Custom Scrollbar */
+/* ═══════════════════════════════════════════════
+   SCROLLBAR — Warm Minimal / Midnight Zen
+   ═══════════════════════════════════════════════ */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  background: var(--scrollbar-thumb);
+  border-radius: var(--radius-pill);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--radius-pill);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--accent);
+  opacity: 0.6;
+}
+
+/* ═══════════════════════════════════════════════
+   THEME TRANSITION ANIMATION — Radial Wipe
+   ═══════════════════════════════════════════════ */
+@keyframes theme-wipe-in {
+  from {
+    clip-path: circle(0% at 50% 12%);
+    opacity: 1;
+  }
+
+  to {
+    clip-path: circle(150% at 50% 12%);
+    opacity: 1;
+  }
+}
+
+@keyframes theme-wipe-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.theme-overlay-enter {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  animation: theme-wipe-in 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.theme-overlay-exit {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  animation: theme-wipe-out 0.7s ease-out forwards;
 }
 
 /* Widget Mode Overrides */
 .widget-mode body {
   background: transparent !important;
 }
+
+/* ═══════════════════════════════════════════════
+   PREMIUM ANIMATIONS
+   ═══════════════════════════════════════════════ */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-up {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s var(--ease-zen) forwards;
+}
+
+.animate-fade-up {
+  animation: fade-up 0.8s var(--ease-zen) forwards;
+}
+
+.animate-scale-up {
+  animation: scale-up 0.4s var(--ease-zen) forwards;
+}

@@ -49,5 +49,19 @@ logs/
 
 # Secrets
 classpoint-2-firebase-adminsdk-fbsvc-301e7f4908.json
+*serviceAccountKey*.json
+*serviceAccount*.json
 *.pem
 *.key
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+# Temp error logs & shortcuts
+*.lnk
+ts_errors*.txt
+tsc_output*.txt
