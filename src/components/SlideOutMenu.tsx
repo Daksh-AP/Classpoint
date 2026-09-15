@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Folder, UserCheck, PenTool, Globe, Clock, BookOpen, Calendar } from 'lucide-react';
+import { X, Folder, UserCheck, PenTool, Globe, Clock, BookOpen, Calendar, Settings } from 'lucide-react';
 
 const SlideOutMenu = ({
   isOpen,
@@ -11,7 +11,8 @@ const SlideOutMenu = ({
   onShowTimer,
   onShowClassContext,
   onShowDashboard,
-  onShowSchedule
+  onShowSchedule,
+  onOpenSettings
 }: any) => {
   return (
     <>
@@ -69,6 +70,7 @@ const SlideOutMenu = ({
               { icon: UserCheck, label: 'Attendance', action: onShowAttendanceLogger },
               { icon: PenTool, label: 'Whiteboard', action: onShowWhiteboard },
               { icon: Clock, label: 'Timer', action: onShowTimer },
+              { icon: Settings, label: 'Settings & Setup', action: onOpenSettings },
             ].map((item: any, index: number) => (
               <li key={index}>
                 <button

@@ -221,6 +221,17 @@ const MainDashboard: React.FC<MainDashboardProps> = ({
             </>
           )}
         </button>
+
+        <div className="flex items-center gap-3 pointer-events-auto">
+          <button
+            onClick={openSettingsModal}
+            className="p-3 rounded-xl transition-all active:scale-[0.95] flex items-center gap-2.5 group bg-zen-surface border border-zen-text/10 shadow-sm"
+            title="Settings & Setup"
+          >
+            <Settings className="w-5 h-5 transition-transform group-hover:rotate-45" style={{ color: 'var(--text-primary)' }} strokeWidth={1.5} />
+            <span className="text-body font-medium pr-1" style={{ color: 'var(--text-primary)' }}>Settings</span>
+          </button>
+        </div>
       </header>
 
       <main className="max-w-screen-xl mx-auto px-6 relative z-10 w-full animate-fade-in">

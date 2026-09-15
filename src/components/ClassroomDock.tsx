@@ -115,6 +115,7 @@ const ClassroomDock: React.FC<ClassroomDockProps> = ({
       { id: 'whiteboard', icon: PenTool, label: 'Whiteboard', color: '#BF5AF2', isAction: false },
       { id: 'browser', icon: Globe, label: 'Browser', color: '#64D2FF', isAction: false },
       { id: 'attendanceLogger', icon: UserCheck, label: 'Attendance', color: '#30D158', isAction: false },
+      { id: 'settings', icon: Settings, label: 'Settings', color: '#FF9F0A', isAction: true, action: onOpenSettings },
     ];
   };
 

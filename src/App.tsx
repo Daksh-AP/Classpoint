@@ -392,6 +392,7 @@ function App() {
         onShowClassContext={() => setActiveDashboardView('classContext')}
         onShowDashboard={() => setActiveDashboardView('dashboard')}
         onShowSchedule={() => setActiveDashboardView('schedule')}
+        onOpenSettings={() => setIsSettingsModalOpen(true)}
       />
 
       <MainDashboard
