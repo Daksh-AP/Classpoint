@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { Folder, FileText, Image as ImageIcon, File, Search, X, Video } from 'lucide-react';
 import { db } from '../firebase';
 import { useSchoolId } from '../hooks/useSchoolId';
-import { query, collection, where, getDocs } from 'firebase/firestore';
+import { query, collection, where, onSnapshot } from 'firebase/firestore';
 
 const ResourceHub = ({ selectedSection, onClose, onOpenImage, onOpenPDF, onOpenVideo }: any) => {
   const schoolId = useSchoolId();
@@ -12,58 +12,65 @@ const ResourceHub = ({ selectedSection, onClose, onOpenImage, onOpenPDF, onOpenV
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!selectedSection || !selectedSection.grade) {
+    if (!selectedSection) {
       setFiles([]);
       setLoading(false);
       return;
     }
 
-    const gradeContext = `Grade ${String(selectedSection.grade).replace(/\D/g, "")}`;
+    const targetGradeNum = String(selectedSection.grade || '').replace(/\D/g, "");
+    const cleanTargetSection = String(selectedSection.id || '').toLowerCase();
 
     const q = query(
       collection(db, "schools", schoolId, "shared_files"),
-      where("gradeContext", "==", gradeContext),
       where("isArchived", "==", false)
     );
 
-    let isMounted = true;
-    
-    const fetchFiles = async () => {
-      try {
-        const querySnapshot = await getDocs(q);
-        if (!isMounted) return;
-        
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
         const fetched: any[] = [];
         querySnapshot.forEach((doc: any) => {
           const data = doc.data();
-          // Filter by sectionContext if present (if the file was sent to a specific section)
-          if (data.sectionContext && data.sectionContext !== selectedSection.id) {
-             return;
-          }
-          if (!data.isDeleted) fetched.push({ id: doc.id, ...data });
-        });
-        
-        fetched.sort((a: any, b: any) => {
-            if (a.isPinned && !b.isPinned) return -1;
-            if (!a.isPinned && b.isPinned) return 1;
-            const aTime = a.createdAt?.seconds || 0;
-            const bTime = b.createdAt?.seconds || 0;
-            return bTime - aTime;
-        });
-        
-        setFiles(fetched);
-      } catch (err) {
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
+          if (data.isDeleted) return;
 
-    fetchFiles();
+          const fileSection = String(data.sectionContext || '').toLowerCase();
+          const isExplicitSectionMatch = fileSection && fileSection === cleanTargetSection;
+          const isOtherSection = fileSection && fileSection !== cleanTargetSection;
+
+          // If targeted to a different section, ignore
+          if (isOtherSection) return;
+
+          // Check grade match (or if explicitly targeted to this section)
+          const fileGradeNum = String(data.gradeContext || '').replace(/\D/g, "");
+          const isGradeMatch = targetGradeNum && fileGradeNum && targetGradeNum === fileGradeNum;
+
+          if (isExplicitSectionMatch || isGradeMatch) {
+            fetched.push({ id: doc.id, ...data });
+          }
+        });
+
+        fetched.sort((a: any, b: any) => {
+          if (a.isPinned && !b.isPinned) return -1;
+          if (!a.isPinned && b.isPinned) return 1;
+          const aTime = a.createdAt?.seconds || 0;
+          const bTime = b.createdAt?.seconds || 0;
+          return bTime - aTime;
+        });
+
+        setFiles(fetched);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error subscribing to shared files:", error);
+        setLoading(false);
+      }
+    );
 
     return () => {
-        isMounted = false;
+      unsubscribe();
     };
-  }, [selectedSection]);
+  }, [selectedSection, schoolId]);
 
 
 

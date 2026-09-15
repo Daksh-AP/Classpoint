@@ -59,32 +59,38 @@ if (persistentRoot) {
   }
 }
 
-// --- Industrial OPS Hardening: Crash Sentinel Circuit ---
-// When a wall-switch hard cut occurs, deleting orphan LOCK files leaves torn MANIFEST / .ldb tables,
-// causing unhandled Chromium/Firestore startup crashes.
-// The Crash Sentinel Circuit detects unclean shutdowns and resets local LevelDB storage so the app rehydrates cleanly.
+// --- Industrial OPS Hardening: Safe Lock Cleanup ---
+// In the event of a sudden wall-switch cut or abrupt shutdown, ensure stale LevelDB lock files
+// are cleanly cleared without ever wiping user sessions, auth credentials, or LocalStorage/IndexedDB.
 const userDataPath = app.getPath('userData');
-const crashSentinelPath = path.join(userDataPath, '.crash_sentinel');
 
-if (fs.existsSync(crashSentinelPath)) {
-  console.warn('[OPS-RECOVERY] Abrupt power cut detected from previous session (.crash_sentinel present).');
-  console.warn('[OPS-RECOVERY] Purging potentially torn LevelDB / IndexedDB tables to prevent unhandled startup crashes...');
+function cleanOrphanLocks(dir) {
+  if (!fs.existsSync(dir)) return;
   try {
-    fs.rmSync(path.join(userDataPath, 'Local Storage'), { recursive: true, force: true });
-    fs.rmSync(path.join(userDataPath, 'IndexedDB'), { recursive: true, force: true });
-    fs.rmSync(path.join(userDataPath, 'Session Storage'), { recursive: true, force: true });
-    console.log('[OPS-RECOVERY] Successfully purged torn LevelDB state. App will rehydrate cleanly from Firestore.');
-  } catch (cleanErr) {
-    console.warn('[OPS-RECOVERY] Error during crash sentinel cleanup:', cleanErr.message);
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        cleanOrphanLocks(fullPath);
+      } else if (entry.name === 'LOCK' || entry.name.endsWith('.lock')) {
+        try {
+          fs.unlinkSync(fullPath);
+          console.log(`[OPS-PERSISTENCE] Cleared stale lock file: ${fullPath}`);
+        } catch (e) {
+          // File currently held by active process; do not disturb
+        }
+      }
+    }
+  } catch (err) {
+    // Non-fatal if directory read fails
   }
 }
 
-// Arm the sentinel for this session
 try {
-  if (!fs.existsSync(userDataPath)) fs.mkdirSync(userDataPath, { recursive: true });
-  fs.writeFileSync(crashSentinelPath, `${Date.now()}`);
+  cleanOrphanLocks(path.join(userDataPath, 'IndexedDB'));
+  cleanOrphanLocks(path.join(userDataPath, 'Local Storage'));
 } catch (e) {
-  // Non-fatal if read-only
+  // Non-fatal
 }
 
 app.commandLine.appendSwitch('plugins');
@@ -486,14 +492,5 @@ app.on('window-all-closed', () => {
 });
 
 app.on('will-quit', () => {
-  try {
-    const userData = app.getPath('userData');
-    const sentinel = path.join(userData, '.crash_sentinel');
-    if (fs.existsSync(sentinel)) {
-      fs.unlinkSync(sentinel);
-      console.log('[OPS-RECOVERY] Clean shutdown confirmed. Crash sentinel removed.');
-    }
-  } catch (e) {
-    // Ignore cleanup error on quit
-  }
+  console.log('[OPS-PERSISTENCE] Genatis app shutting down.');
 });

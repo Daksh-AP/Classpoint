@@ -112,10 +112,11 @@ function App() {
   useEffect(() => {
     if (!selectedSection || isOffline) return;
 
-    const gradeContext = `Grade ${String(selectedSection.grade).replace(/\D/g, "")}`;
+    const targetGradeNum = String(selectedSection.grade || '').replace(/\D/g, "");
+    const cleanTargetSection = String(selectedSection.id || '').toLowerCase();
+
     const q = query(
       collection(db, "schools", schoolId, "shared_files"),
-      where("gradeContext", "==", gradeContext),
       where("transferQueue", "==", true)
     );
 
@@ -123,7 +124,16 @@ function App() {
       snapshot.docChanges().forEach((change) => {
         if (change.type === "added" || change.type === "modified") {
           const file = change.doc.data();
-          if (file.sectionContext && file.sectionContext !== selectedSection.id) return;
+          const fileSection = String(file.sectionContext || '').toLowerCase();
+          
+          // If targeted to a different section, ignore
+          if (fileSection && fileSection !== cleanTargetSection) return;
+
+          const fileGradeNum = String(file.gradeContext || '').replace(/\D/g, "");
+          const isExplicitSectionMatch = fileSection && fileSection === cleanTargetSection;
+          const isGradeMatch = targetGradeNum && fileGradeNum && targetGradeNum === fileGradeNum;
+
+          if (!isExplicitSectionMatch && !isGradeMatch) return;
           
           if (file.transferQueue && file.downloadUrl) {
             if (window.electronAPI) {
@@ -137,7 +147,7 @@ function App() {
     });
 
     return () => unsubscribe();
-  }, [selectedSection, isOffline]);
+  }, [selectedSection, isOffline, schoolId]);
 
   useEffect(() => {
     if (window.electronAPI) {
@@ -417,6 +427,11 @@ function App() {
         onSignOut={async () => {
           try {
             await auth.signOut();
+            localStorage.removeItem('cached_genatis_user');
+            localStorage.removeItem('substituteActive');
+            localStorage.removeItem('substituteName');
+            localStorage.removeItem('substituteAbsentEmail');
+            toast.success("Signed out successfully");
           } catch (e: any) {
             toast.error("Sign out failed");
           }

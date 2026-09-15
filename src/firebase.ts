@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import {
   initializeFirestore,
+  getFirestore,
   collection,
   doc,
   setDoc,
@@ -14,6 +15,9 @@ import {
 } from "firebase/firestore";
 import {
   getAuth,
+  initializeAuth,
+  indexedDBLocalPersistence,
+  browserLocalPersistence,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
@@ -35,8 +39,28 @@ const firebaseConfig = {
 
 // init firebase
 const app = initializeApp(firebaseConfig);
-const db = initializeFirestore(app, {});
-const auth = getAuth(app);
+
+// Initialize Firestore with robust multi-tab persistent cache
+let db: any;
+try {
+  db = initializeFirestore(app, {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+  });
+} catch (e) {
+  // Fallback if already initialized in dev hot-reload
+  db = getFirestore(app);
+}
+
+// Initialize Auth with IndexedDB and fallback to browserLocalPersistence (localStorage)
+// so smartboard sessions reliably persist across app restarts and power cuts
+let auth: any;
+try {
+  auth = initializeAuth(app, {
+    persistence: [indexedDBLocalPersistence, browserLocalPersistence]
+  });
+} catch (e) {
+  auth = getAuth(app);
+}
 
 // register a new smartboard
 const registerSmartboard = async (ownerUid: any, name: string, location: any, schoolId?: string) => {

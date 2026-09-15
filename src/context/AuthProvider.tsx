@@ -11,7 +11,14 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }: any) => {
-    const [currentUser, setCurrentUser] = useState<any | null>(null);
+    const [currentUser, setCurrentUser] = useState<any | null>(() => {
+        try {
+            const cached = localStorage.getItem('cached_genatis_user');
+            return cached ? JSON.parse(cached) : null;
+        } catch {
+            return null;
+        }
+    });
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -23,15 +30,51 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }: an
                         const userData = userDoc.data();
                         const schoolId = userData.schoolId || 'default_school';
                         localStorage.setItem('schoolId', schoolId);
-                        setCurrentUser({ ...user, ...userData });
+                        const fullUser = { ...user, ...userData };
+                        localStorage.setItem('cached_genatis_user', JSON.stringify({
+                            uid: user.uid,
+                            email: user.email,
+                            isAnonymous: user.isAnonymous,
+                            ...userData
+                        }));
+                        setCurrentUser(fullUser);
                     } else {
+                        // Fallback to existing cached profile if userDoc fetch returns empty or offline
+                        const cachedRaw = localStorage.getItem('cached_genatis_user');
+                        if (cachedRaw) {
+                            try {
+                                const cached = JSON.parse(cachedRaw);
+                                if (cached.uid === user.uid) {
+                                    setCurrentUser({ ...user, ...cached });
+                                    setIsLoading(false);
+                                    return;
+                                }
+                            } catch (e) {}
+                        }
                         setCurrentUser(user);
+                        localStorage.setItem('cached_genatis_user', JSON.stringify({
+                            uid: user.uid,
+                            email: user.email,
+                            isAnonymous: user.isAnonymous
+                        }));
                     }
                 } catch (error) {
-// /* console.error */ ("Error fetching user data:", error);
+                    // In offline/reconnect state, restore from cache if valid
+                    const cachedRaw = localStorage.getItem('cached_genatis_user');
+                    if (cachedRaw) {
+                        try {
+                            const cached = JSON.parse(cachedRaw);
+                            if (cached.uid === user.uid) {
+                                setCurrentUser({ ...user, ...cached });
+                                setIsLoading(false);
+                                return;
+                            }
+                        } catch (e) {}
+                    }
                     setCurrentUser(user);
                 }
             } else {
+                localStorage.removeItem('cached_genatis_user');
                 setCurrentUser(null);
             }
             setIsLoading(false);
