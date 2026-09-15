@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PlusCircle, Trash2, Save, X, BookOpen, User, MapPin, Clock, Plus, ChevronDown, Check } from 'lucide-react';
+import { PlusCircle, Trash2, Save, X, BookOpen, User, MapPin, Clock, Plus, ChevronDown, Check, RotateCcw, Eraser } from 'lucide-react';
 import { AnimatedSelect } from './AnimatedSelect';
 import { SCHOOL_SUBJECTS, SCHOOL_TIMINGS } from '../utils/SchoolData';
 
@@ -57,6 +57,32 @@ const ManualTimetableEntry = ({ onSave, onCancel, selectedSection, initialTimeta
   const [customSubject, setCustomSubject] = useState('');
 
   const [errors, setErrors] = useState<any>({});
+  
+  // State for Undo
+  const [undoHistory, setUndoHistory] = useState<any>(null);
+
+  const handleClearDay = () => {
+    setUndoHistory(JSON.parse(JSON.stringify(timetableData)));
+    const updatedData = { ...timetableData };
+    updatedData.sections[selectedSection.id][currentDay] = [];
+    setTimetableData(updatedData);
+  };
+
+  const handleClearAll = () => {
+    setUndoHistory(JSON.parse(JSON.stringify(timetableData)));
+    const updatedData = { ...timetableData };
+    DAYS.forEach((day: string) => {
+      updatedData.sections[selectedSection.id][day] = [];
+    });
+    setTimetableData(updatedData);
+  };
+
+  const handleUndo = () => {
+    if (undoHistory) {
+      setTimetableData(undoHistory);
+      setUndoHistory(null);
+    }
+  };
 
   useEffect(() => {
     if (!TIME_SLOTS.includes(newClass.startTime)) {
@@ -392,9 +418,40 @@ const ManualTimetableEntry = ({ onSave, onCancel, selectedSection, initialTimeta
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-between items-center pt-4">
-          <div className="text-small">
-            Total classes: <span className="font-medium text-[var(--accent)]">{Object.values(timetableData.sections[selectedSection.id] || {}).reduce((total: number, day: any) => total + day.length, 0) as React.ReactNode}</span>
+        <div className="flex justify-between items-center pt-6 mt-4 border-t border-[var(--glass-border)]">
+          <div className="flex items-center space-x-4">
+            <div className="text-small">
+              Total classes: <span className="font-medium text-[var(--accent)]">{Object.values(timetableData.sections[selectedSection.id] || {}).reduce((total: number, day: any) => total + day.length, 0) as React.ReactNode}</span>
+            </div>
+
+            <div className="flex items-center space-x-2 border-l border-[var(--glass-border)] pl-4">
+              <button
+                onClick={handleClearDay}
+                className="flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
+                title={`Clear all classes for ${currentDay}`}
+              >
+                <Eraser className="w-3.5 h-3.5 mr-1.5" />
+                Clear {currentDay.substring(0, 3)}
+              </button>
+              <button
+                onClick={handleClearAll}
+                className="flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
+                title="Clear all days"
+              >
+                <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                Clear All
+              </button>
+              
+              {undoHistory && (
+                <button
+                  onClick={handleUndo}
+                  className="flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors shadow-sm"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+                  Undo
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="flex space-x-4">
