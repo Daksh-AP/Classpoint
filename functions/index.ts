@@ -14,3 +14,4 @@ export { parseTimetableWithAI } from './src/ai/parseTimetable';
 export * from './src/jobs/databaseCleanup';
 export * from './src/triggers/stats';
 export * from './src/media/r2Service';
+export * from './src/notifications/pushDispatcher';
