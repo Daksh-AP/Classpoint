@@ -2755,6 +2755,10 @@ p {
   padding-left: 1.5rem;
 }
 
+.pr-1{
+  padding-right: 0.25rem;
+}
+
 .pr-2{
   padding-right: 0.5rem;
 }
@@ -2783,8 +2787,8 @@ p {
   padding-top: 1rem;
 }
 
-.pr-1{
-  padding-right: 0.25rem;
+.pt-6{
+  padding-top: 1.5rem;
 }
 
 .text-left{
@@ -3815,6 +3819,10 @@ p {
   background-color: rgb(59 130 246 / var(--tw-bg-opacity, 1));
 }
 
+.hover\:bg-emerald-500\/20:hover{
+  background-color: rgb(16 185 129 / 0.2);
+}
+
 .hover\:bg-gray-200:hover{
   --tw-bg-opacity: 1;
   background-color: rgb(229 231 235 / var(--tw-bg-opacity, 1));
@@ -4520,6 +4528,16 @@ p {
     font-size: 1rem;
     line-height: 1.5rem;
   }
+
+  .md\:text-6xl{
+    font-size: 3.75rem;
+    line-height: 1;
+  }
+
+  .md\:text-sm{
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
 }
 
 @media (min-width: 1024px){
@@ -4553,5 +4571,10 @@ p {
 
   .lg\:grid-cols-4{
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .lg\:text-7xl{
+    font-size: 4.5rem;
+    line-height: 1;
   }
 }
