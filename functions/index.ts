@@ -12,3 +12,4 @@ export { parseCSVWithAIV2 } from './src/ai/parseCSV';
 export { parseTimetableWithAI } from './src/ai/parseTimetable';
 
 export * from './src/jobs/databaseCleanup';
+export * from './src/triggers/stats';
