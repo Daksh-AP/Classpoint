@@ -98,12 +98,34 @@ const AnnouncementBanner = ({ classId }: any) => {
                             <Bell className="w-16 h-16 opacity-90 animate-pulse" style={{ color: 'var(--accent)' }} />
                         </div>
 
-                        <h1 
-                            className="text-5xl md:text-7xl font-bold tracking-tight mb-6" 
-                            style={{ color: 'var(--text-primary)' }}
-                        >
-                            Announcement
-                        </h1>
+                        {visibleAnnouncement.title ? (
+                            <>
+                                <div 
+                                    className="mb-4 inline-flex items-center px-5 py-1.5 rounded-full shadow-sm"
+                                    style={{ border: '1px solid var(--glass-border)', background: 'var(--glass-bg)' }}
+                                >
+                                    <span 
+                                        className="text-xs md:text-sm font-bold tracking-widest uppercase"
+                                        style={{ color: 'var(--accent)' }}
+                                    >
+                                        Announcement
+                                    </span>
+                                </div>
+                                <h1 
+                                    className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 max-w-4xl leading-tight" 
+                                    style={{ color: 'var(--text-primary)' }}
+                                >
+                                    {visibleAnnouncement.title}
+                                </h1>
+                            </>
+                        ) : (
+                            <h1 
+                                className="text-5xl md:text-7xl font-bold tracking-tight mb-6" 
+                                style={{ color: 'var(--text-primary)' }}
+                            >
+                                Announcement
+                            </h1>
+                        )}
 
                         {visibleAnnouncement.senderName && (
                             <div 
