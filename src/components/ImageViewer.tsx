@@ -216,8 +216,36 @@ const ImageViewer = ({ imageUrl, onClose, onSave }: any) => {
             // Draw annotations (scaled to match natural size)
             ctx.drawImage(canvasRef.current, 0, 0, tempCanvas.width, tempCanvas.height);
 
-            // Convert to data URL
-            const dataUrl = tempCanvas.toDataURL('image/png');
+            // --- COST OPTIMIZATION: Pillar 2 (Client-Side Canvas Compression) ---
+            // Max dimension constraint: 1600px, WebP at 0.75 quality factor (reduces 12MB PNG to ~200KB)
+            let exportCanvas = tempCanvas;
+            const maxDim = 1600;
+            if (tempCanvas.width > maxDim || tempCanvas.height > maxDim) {
+                let targetWidth = tempCanvas.width;
+                let targetHeight = tempCanvas.height;
+                if (targetWidth > targetHeight) {
+                    targetHeight = Math.round((targetHeight * maxDim) / targetWidth);
+                    targetWidth = maxDim;
+                } else {
+                    targetWidth = Math.round((targetWidth * maxDim) / targetHeight);
+                    targetHeight = maxDim;
+                }
+
+                const scaledCanvas = document.createElement('canvas');
+                scaledCanvas.width = targetWidth;
+                scaledCanvas.height = targetHeight;
+                const scaledCtx = scaledCanvas.getContext('2d');
+                if (scaledCtx) {
+                    scaledCtx.drawImage(tempCanvas, 0, 0, targetWidth, targetHeight);
+                    exportCanvas = scaledCanvas;
+                }
+            }
+
+            let dataUrl = exportCanvas.toDataURL('image/webp', 0.75);
+            // Fallback for browsers without WebP canvas export support
+            if (!dataUrl.startsWith('data:image/webp')) {
+                dataUrl = exportCanvas.toDataURL('image/jpeg', 0.75);
+            }
 
             // Call parent save handler
             if (onSave) {
