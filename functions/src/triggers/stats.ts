@@ -3,6 +3,7 @@ import * as admin from 'firebase-admin';
 import { Change, EventContext } from 'firebase-functions';
 import { DocumentSnapshot } from 'firebase-admin/firestore';
 
+if (!admin.apps.length) admin.initializeApp();
 const db = admin.firestore();
 
 /**

@@ -1,5 +1,7 @@
 import * as admin from 'firebase-admin';
-admin.initializeApp();
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
 
 // Export all auth functions
 export * from './src/auth/customToken';
