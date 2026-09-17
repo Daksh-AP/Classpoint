@@ -29,7 +29,7 @@ import { useData } from './context/DataProvider';
 import { useTools } from './context/ToolProvider';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { signInWithEmailAndPassword, signInWithCustomToken } from 'firebase/auth';
-import { collection, query, where, getDocs, onSnapshot, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, onSnapshot, updateDoc, doc, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
 declare global {
@@ -67,47 +67,92 @@ function App() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [isUnlocking, setIsUnlocking] = useState(false);
 
+  // Automatically resolve a resilient Smartboard identifier:
+  // 1. Manually linked connectedSmartboardId (from SettingsModal)
+  // 2. Section-specific board ID (e.g. board_grade9_whiz1) if a section is selected/locked
+  // 3. User-specific board ID (e.g. board_{uid}) if logged in
+  // 4. Hardware/device ID stored persistently in localStorage
+  const activeSmartboardId = React.useMemo(() => {
+    if (connectedSmartboardId) return connectedSmartboardId;
+    if (selectedSection?.id) {
+      return `board_${String(selectedSection.id).toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+    }
+    if (currentUser?.uid) {
+      return `board_${currentUser.uid}`;
+    }
+    let stored = localStorage.getItem('genatis_device_board_id');
+    if (!stored) {
+      stored = `board_device_${Math.random().toString(36).substring(2, 10)}`;
+      localStorage.setItem('genatis_device_board_id', stored);
+    }
+    return stored;
+  }, [connectedSmartboardId, selectedSection?.id, currentUser?.uid]);
+
   // Sync smartboard status to Firestore with continuous heartbeat
   useEffect(() => {
-    if (!connectedSmartboardId) return;
+    if (!schoolId || !activeSmartboardId) return;
     
-    const boardRef = doc(db, 'schools', schoolId, 'smartboards', connectedSmartboardId);
+    const boardRef = doc(db, 'schools', schoolId, 'smartboards', activeSmartboardId);
     
     const sendHeartbeat = (statusOverride?: string) => {
-      const status = statusOverride || (isOffline ? 'offline' : 'online');
-      updateDoc(boardRef, { 
+      const isActuallyOffline = isOffline || !navigator.onLine;
+      const status = statusOverride || (isActuallyOffline ? 'offline' : 'online');
+      
+      const boardName = selectedSection?.name 
+        ? `${selectedSection.name} Smartboard` 
+        : (currentUser?.name ? `${currentUser.name}'s Board` : (currentUser?.email ? `${currentUser.email.split('@')[0]} Board` : 'Classroom Smartboard'));
+      
+      const boardLocation = selectedSection?.name
+        ? `${selectedSection.name} Classroom`
+        : 'Classroom';
+
+      setDoc(boardRef, { 
+        id: activeSmartboardId,
+        boardId: activeSmartboardId,
+        name: boardName,
+        location: boardLocation,
+        sectionId: selectedSection?.id || null,
+        sectionName: selectedSection?.name || null,
+        grade: selectedSection?.grade || null,
         status,
-        lastSync: new Date().toISOString()
-      }).catch(() => {});
+        lastSync: new Date().toISOString(),
+        lastHeartbeat: new Date().toISOString(),
+        schoolId,
+        deviceType: 'desktop-electron',
+        ownerUid: currentUser?.uid || null,
+        ownerEmail: currentUser?.email || null,
+        updatedAt: new Date().toISOString()
+      }, { merge: true }).catch(() => {});
     };
 
-    // Send initial status
-    sendHeartbeat();
+    // Send initial status immediately
+    sendHeartbeat('online');
 
-    // 5-minute recurring heartbeat (reduces Firestore writes by 90% while keeping board status fresh)
+    // 2-minute recurring heartbeat (keeps admin fleet status fresh while conserving Firestore writes)
     const intervalId = setInterval(() => {
       sendHeartbeat();
-    }, 300000);
+    }, 120000);
+
+    const handleNetworkOnline = () => sendHeartbeat('online');
+    const handleNetworkOffline = () => sendHeartbeat('offline');
 
     const handleBeforeUnload = () => {
       // Best effort to set offline when closing
-      updateDoc(boardRef, { 
-        status: 'offline',
-        lastSync: new Date().toISOString()
-      }).catch(() => {});
+      sendHeartbeat('offline');
     };
 
+    window.addEventListener('online', handleNetworkOnline);
+    window.addEventListener('offline', handleNetworkOffline);
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
       clearInterval(intervalId);
+      window.removeEventListener('online', handleNetworkOnline);
+      window.removeEventListener('offline', handleNetworkOffline);
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      updateDoc(boardRef, { 
-        status: 'offline',
-        lastSync: new Date().toISOString()
-      }).catch(() => {});
+      sendHeartbeat('offline');
     };
-  }, [connectedSmartboardId, isOffline, schoolId]);
+  }, [activeSmartboardId, schoolId, selectedSection?.id, selectedSection?.name, isOffline, currentUser?.uid]);
 
   useEffect(() => {
     if (!selectedSection || isOffline) return;
@@ -421,7 +466,7 @@ function App() {
         isSectionLocked={isSectionLocked}
         onSettingsChange={handleSettingsChange}
         currentSettings={settings}
-        connectedSmartboardId={connectedSmartboardId}
+        connectedSmartboardId={connectedSmartboardId || activeSmartboardId}
         glanceabilityMode={glanceabilityMode}
         onToggleGlanceabilityMode={toggleGlanceabilityMode}
         onConnectSmartboard={handleConnectSmartboard}
