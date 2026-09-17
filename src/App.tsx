@@ -84,10 +84,10 @@ function App() {
     // Send initial status
     sendHeartbeat();
 
-    // 30-second recurring heartbeat
+    // 5-minute recurring heartbeat (reduces Firestore writes by 90% while keeping board status fresh)
     const intervalId = setInterval(() => {
       sendHeartbeat();
-    }, 30000);
+    }, 300000);
 
     const handleBeforeUnload = () => {
       // Best effort to set offline when closing

@@ -115,8 +115,8 @@ function createMainWindow() {
     icon: path.join(__dirname, 'public', 'icon.png'),
     webPreferences: {
       zoomFactor: 1.0,
-      nodeIntegration: true,
-      contextIsolation: false,
+      nodeIntegration: false,
+      contextIsolation: true,
       preload: path.join(__dirname, 'public', 'preload.js'),
       webSecurity: !isDev,
       webviewTag: true
@@ -175,8 +175,9 @@ function createOverlayWindow() {
     skipTaskbar: true,
     resizable: false,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'public', 'preload.js'),
       webSecurity: !isDev,
     },
   });
@@ -270,13 +271,30 @@ ipcMain.handle('set-widget-size', (event, { width, height }) => {
   }
 });
 
+ipcMain.handle('set-widget-minimized', (event, isMinimized) => {
+  if (overlayWindow) {
+    if (isMinimized) {
+      overlayWindow.setSize(350, 64);
+    } else {
+      overlayWindow.setSize(350, 200);
+    }
+  }
+});
+
 ipcMain.on('broadcast-widget-data', (event, data) => {
   if (overlayWindow) {
+    overlayWindow.webContents.send('broadcast-widget-data', data);
     overlayWindow.webContents.send('widget-data-update', data);
   }
 });
 
 ipcMain.on('request-widget-data', (event) => {
+  if (mainWindow) {
+    mainWindow.webContents.send('request-widget-sync');
+  }
+});
+
+ipcMain.on('request-widget-sync', (event) => {
   if (mainWindow) {
     mainWindow.webContents.send('request-widget-sync');
   }

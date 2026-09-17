@@ -40,9 +40,8 @@ const Widget = ({ selectedSection: propSection, timetableData: propData, isOverl
     } as any)[widgetSettings.fontSize] || '1rem';
 
     // Inform Electron about size change
-    if (window.require) {
-      const { ipcRenderer } = window.require('electron');
-      ipcRenderer.invoke('set-widget-size', { width: widgetSettings.width, height: widgetSettings.height });
+    if (window.electronAPI) {
+      window.electronAPI.invoke('set-widget-size', { width: widgetSettings.width, height: widgetSettings.height });
     }
   }, [widgetSettings]);
 
@@ -103,9 +102,12 @@ const Widget = ({ selectedSection: propSection, timetableData: propData, isOverl
     const newState = !isMinimized;
     setIsMinimized(newState);
     StorageService.saveWidgetVisibility(newState); // Save visibility state
-    if (window.require) {
-      const { ipcRenderer } = window.require('electron');
-      ipcRenderer.invoke('set-widget-minimized', newState);
+    if (window.electronAPI) {
+      window.electronAPI.invoke('set-widget-minimized', newState);
+      window.electronAPI.invoke('set-widget-size', { 
+        width: widgetSettings.width, 
+        height: newState ? 64 : widgetSettings.height 
+      });
     }
   };
 
