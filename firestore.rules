@@ -25,19 +25,30 @@ service cloud.firestore {
       return isAuthenticated() && !isBoard();
     }
 
+    function isSuperAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.role == 'superadmin' ||
+        getUserDoc().role == 'superadmin'
+      );
+    }
+
     function isAdmin() {
       return isAuthenticated() && (
-        getUserDoc().role in ['admin', 'superadmin', 'coordinator'] ||
-        (request.auth.token.email != null && (
-          request.auth.token.email.lower() == 'teacher@school.edu' ||
-          (exists(/databases/$(database)/documents/users/$(request.auth.token.email.lower())) &&
-           get(/databases/$(database)/documents/users/$(request.auth.token.email.lower())).data.role in ['admin', 'superadmin', 'coordinator'])
-        ))
+        isSuperAdmin() ||
+        request.auth.token.role in ['admin', 'coordinator'] ||
+        getUserDoc().role in ['admin', 'coordinator'] ||
+        (request.auth.token.email != null &&
+          exists(/databases/$(database)/documents/users/$(request.auth.token.email.lower())) &&
+          get(/databases/$(database)/documents/users/$(request.auth.token.email.lower())).data.role in ['admin', 'coordinator'])
       );
     }
 
     function belongsToSchool(schoolId) {
-      return getUserDoc().schoolId == schoolId || getUserDoc().schoolId == null || schoolId == 'default_school';
+      return isAuthenticated() && (
+        isSuperAdmin() ||
+        (request.auth.token.schoolId != null && request.auth.token.schoolId == schoolId) ||
+        (getUserDoc().schoolId != null && getUserDoc().schoolId == schoolId)
+      );
     }
 
     match /users/{userId} {
@@ -47,35 +58,35 @@ service cloud.firestore {
 
     match /schools/{schoolId} {
       allow read: if isAuthenticated() && belongsToSchool(schoolId);
-      allow write: if isAdmin() || belongsToSchool(schoolId);
+      allow write: if isAdmin() && belongsToSchool(schoolId);
 
       match /{document=**} {
         allow read: if isAuthenticated() && belongsToSchool(schoolId);
-        allow write: if isAdmin();
+        allow write: if isAdmin() && belongsToSchool(schoolId);
       }
 
       match /timetables/{document=**} {
-        allow read, write: if isAuthenticated() && (isTeacher() || isBoard() || isAdmin() || belongsToSchool(schoolId));
+        allow read, write: if isAuthenticated() && belongsToSchool(schoolId);
       }
 
       match /user_settings/{userId} {
-        allow read, write: if isAuthenticated() && (request.auth.uid == userId || isAdmin() || isBoard() || isTeacher());
+        allow read, write: if isAuthenticated() && (request.auth.uid == userId || (belongsToSchool(schoolId) && (isAdmin() || isBoard() || isTeacher())));
       }
 
       match /smartboards/{smartboardId} {
-        allow read, write: if isAuthenticated() && (isTeacher() || isBoard() || isAdmin() || belongsToSchool(schoolId));
+        allow read, write: if isAuthenticated() && belongsToSchool(schoolId);
       }
 
       match /grades/{gradeId} {
-        allow read, write: if isAuthenticated() && (isAdmin() || (isTeacher() && belongsToSchool(schoolId)));
+        allow read, write: if isAuthenticated() && belongsToSchool(schoolId) && (isAdmin() || isTeacher());
 
         match /{document=**} {
-          allow read, write: if isAuthenticated() && (isAdmin() || (isTeacher() && belongsToSchool(schoolId)));
+          allow read, write: if isAuthenticated() && belongsToSchool(schoolId) && (isAdmin() || isTeacher());
         }
       }
 
       match /users/{userId} {
-        allow read, write: if isAuthenticated() && (isAdmin() || belongsToSchool(schoolId));
+        allow read, write: if isAuthenticated() && belongsToSchool(schoolId) && isAdmin();
       }
 
       match /parentChats/{chatId} {
@@ -86,15 +97,15 @@ service cloud.firestore {
       }
 
       match /parentAccounts/{document=**} {
-        allow read, write: if isAuthenticated() && (isAdmin() || belongsToSchool(schoolId));
+        allow read, write: if isAuthenticated() && belongsToSchool(schoolId) && (isAdmin() || isTeacher());
       }
       
       match /lessonEntries/{docId} {
-        allow write: if isAdmin() || (isTeacher() && belongsToSchool(schoolId));
+        allow write: if belongsToSchool(schoolId) && (isAdmin() || isTeacher());
       }
 
       match /subjectStates/{docId} {
-        allow write: if isAdmin() || (isTeacher() && belongsToSchool(schoolId));
+        allow write: if belongsToSchool(schoolId) && (isAdmin() || isTeacher());
       }
 
       match /announcements/{announcementId} {
@@ -144,12 +155,18 @@ service cloud.firestore {
     
     match /{path=**}/students/{studentId} {
       allow read: if isAuthenticated() && belongsToSchool(resource.data.schoolId);
-      allow write: if isAuthenticated() && (isAdmin() || isTeacher());
+      allow write: if isAuthenticated() && (isAdmin() || isTeacher()) && (
+        (request.resource.data.schoolId != null && belongsToSchool(request.resource.data.schoolId)) ||
+        (resource != null && belongsToSchool(resource.data.schoolId))
+      );
     }
 
     match /{path=**}/attendance/{dateKey} {
       allow read: if isAuthenticated() && belongsToSchool(resource.data.schoolId);
-      allow write: if isAuthenticated() && (isAdmin() || isTeacher());
+      allow write: if isAuthenticated() && (isAdmin() || isTeacher()) && (
+        (request.resource.data.schoolId != null && belongsToSchool(request.resource.data.schoolId)) ||
+        (resource != null && belongsToSchool(resource.data.schoolId))
+      );
     }
 
     match /schoolStats/{statId} {
