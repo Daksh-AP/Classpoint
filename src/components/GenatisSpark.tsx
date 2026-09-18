@@ -51,9 +51,31 @@ const GenatisSpark = ({ isLoading, onComplete }: any) => {
 
     useEffect(() => {
         let isMounted = true;
-        let fillInterval: any
-        let checkInterval: any
+        let fillInterval: any;
+        let checkInterval: any;
         const run = async () => {
+            // STALE-WHILE-REVALIDATE: If cached session/data exists, fast-track splash to hit <500ms paint
+            const hasLocalCache = Boolean(
+                localStorage.getItem('cached_genatis_user') || 
+                localStorage.getItem('timetableData') ||
+                localStorage.getItem('genatis_device_board_id')
+            );
+
+            if (hasLocalCache) {
+                setPhase('logoIn');
+                await logoControls.start({
+                    scale: 1, opacity: 1, x: 0,
+                    transition: { duration: 0.18, ease: 'easeOut' }
+                });
+                if (!isMounted) return;
+                await bgControls.start({
+                    opacity: 0,
+                    transition: { duration: 0.15, ease: 'easeOut' }
+                });
+                if (isMounted) onCompleteRef.current?.();
+                return;
+            }
+
             await new Promise((r: any) => setTimeout(r, 200));
             if (!isMounted) return;
 

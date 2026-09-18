@@ -2,7 +2,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   invoke: (channel, data) => {
-    const validChannels = ['show-widget', 'hide-widget', 'close-widget', 'save-file', 'open-path', 'check-for-updates', 'download-update', 'install-update', 'set-widget-size', 'set-widget-minimized', 'get-start-on-login', 'get-machine-hardware-id'];
+    const validChannels = ['show-widget', 'hide-widget', 'close-widget', 'save-file', 'open-path', 'check-for-updates', 'download-update', 'install-update', 'set-widget-size', 'set-widget-minimized', 'get-start-on-login', 'get-machine-hardware-id', 'get-hardware-config'];
     if (validChannels.includes(channel)) {
       return ipcRenderer.invoke(channel, data);
     }

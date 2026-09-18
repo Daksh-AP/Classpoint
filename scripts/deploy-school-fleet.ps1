@@ -63,15 +63,29 @@ try {
         Write-Host "  -> Unblocked NTFS Zone.Identifier streams from application files." -ForegroundColor Green
     }
     Add-MpPreference -ExclusionProcess "genatis-board.exe" -ErrorAction SilentlyContinue
+    Add-MpPreference -ExclusionProcess "ClassPoint.exe" -ErrorAction SilentlyContinue
     Add-MpPreference -ExclusionProcess "electron.exe" -ErrorAction SilentlyContinue
     Write-Host "  -> Added Windows Defender exclusions for process and installation directory." -ForegroundColor Green
 } catch {
     Write-Warning "  -> Could not modify Defender exclusions (group policy may manage Defender)."
 }
 
-# 4. Hardware Machine Identity Generation (Deep Freeze Amnesia Bypass)
-Write-Host "
-[3/4] Hardware Identity Pre-Flight Check..." -ForegroundColor Yellow
+# 4. Windows Background Task & Update Hogging Prevention
+Write-Host "`n[3/5] Configuring Windows Update Active Hours (Prevent 7:55 AM CPU Spikes)..." -ForegroundColor Yellow
+try {
+    # Lock Active Hours from 8:00 AM (08:00) to 5:00 PM (17:00)
+    $auPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU"
+    if (-not (Test-Path $auPath)) { New-Item -Path $auPath -Force | Out-Null }
+    Set-ItemProperty -Path $auPath -Name "SetActiveHours" -Value 1 -Type DWord -Force
+    Set-ItemProperty -Path $auPath -Name "ActiveHoursStart" -Value 8 -Type DWord -Force
+    Set-ItemProperty -Path $auPath -Name "ActiveHoursEnd" -Value 17 -Type DWord -Force
+    Write-Host "  -> Active Hours locked to 8:00 AM - 5:00 PM. System updates deferred to evening." -ForegroundColor Green
+} catch {
+    Write-Warning "  -> Could not set Windows Update Active Hours: $_"
+}
+
+# 5. Hardware Machine Identity Generation (Deep Freeze Amnesia Bypass)
+Write-Host "`n[4/5] Hardware Identity Pre-Flight Check..." -ForegroundColor Yellow
 try {
     $hwUuid = (Get-CimInstance Win32_ComputerSystemProduct).UUID
     $hostname = $env:COMPUTERNAME
@@ -83,20 +97,27 @@ try {
     Write-Warning "  -> Could not query WMI BIOS UUID: $_"
 }
 
-# 5. Scheduled Background Update Task (Runs under SYSTEM, No Teacher UAC Prompts)
-Write-Host "
-[4/4] Setting Up Silent Boot Updater (SYSTEM Task)..." -ForegroundColor Yellow
-$taskName = "GenatisSmartboardFleetUpdater"
+# 6. Scheduled App Launch with 10-Second Post-Boot Delay
+Write-Host "`n[5/5] Configuring Staggered App Launch (10s Delay Post-Boot)..." -ForegroundColor Yellow
+$appTaskName = "ClassPointSmartboardDelayedLaunch"
 try {
-    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command Start-Sleep -Seconds 10"
-    $trigger = New-ScheduledTaskTrigger -AtStartup
-    $principal = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest
-    $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
+    $appExe = "$InstallPath\ClassPoint.exe"
+    if (-not (Test-Path $appExe)) { $appExe = "$InstallPath\genatis-board.exe" }
     
-    Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null
-    Write-Host "  -> Task '' registered under SYSTEM context for silent background fleet maintenance." -ForegroundColor Green
+    # Remove un-delayed startup registry entry if present
+    Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "genatis-board" -ErrorAction SilentlyContinue
+    Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "ClassPoint" -ErrorAction SilentlyContinue
+
+    $appAction = New-ScheduledTaskAction -Execute $appExe
+    $appTrigger = New-ScheduledTaskTrigger -AtLogOn
+    $appTrigger.Delay = "PT10S" # 10 seconds post-logon delay for Wi-Fi & GPU drivers to settle
+    $appPrincipal = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Users" -RunLevel Highest
+    $appSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+    
+    Register-ScheduledTask -TaskName $appTaskName -Action $appAction -Trigger $appTrigger -Principal $appPrincipal -Settings $appSettings -Force | Out-Null
+    Write-Host "  -> Scheduled Task '$appTaskName' configured with 10s post-logon delay." -ForegroundColor Green
 } catch {
-    Write-Warning "  -> Could not register scheduled task: $_"
+    Write-Warning "  -> Could not register delayed app launch task: $_"
 }
 
 Write-Host "

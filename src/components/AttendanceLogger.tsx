@@ -6,6 +6,7 @@ import { X, ChevronLeft, ChevronRight, Calendar, User, Check, XCircle, Plus, Tra
 import toast from 'react-hot-toast';
 import { paths } from '../lib/firebase/paths';
 import { useSchoolId } from '../hooks/useSchoolId';
+import { StorageService } from '../services/StorageService';
 
 // Helper: generate all dates for a given month/year excluding Sundays
 function getMonthDays(year: any, month: any) {
@@ -109,7 +110,10 @@ export default function AttendanceLogger({ year = new Date().getFullYear(), mont
     // Tracks the latest fetch request to discard results from stale async calls (race condition fix)
     const fetchIdRef = useRef(0);
 
-    const [students, setStudents] = useState<any[]>([]);
+    // STALE-WHILE-REVALIDATE: Seed students from local cache immediately (<500ms offline paint)
+    const [students, setStudents] = useState<any[]>(() => {
+        return selectedSection?.id ? StorageService.getCachedSchoolStudents(selectedSection.id) : [];
+    });
     const [currentMonth, setCurrentMonth] = useState(month);
     const [currentYear, setCurrentYear] = useState(year);
     const [isEditingStudents, setIsEditingStudents] = useState(false);
@@ -120,6 +124,13 @@ export default function AttendanceLogger({ year = new Date().getFullYear(), mont
 
     useEffect(() => {
         if (!selectedSection?.grade || !selectedSection?.id) return;
+        
+        // Immediately sync from local cache if available so roster renders instantly
+        const cached = StorageService.getCachedSchoolStudents(selectedSection.id);
+        if (cached && cached.length > 0) {
+            setStudents(cached);
+        }
+
         const gradeNum = getGradeNumber(selectedSection.grade);
         if (!gradeNum) return;
         const studentsPath = paths.students(gradeNum, selectedSection.id);
@@ -130,8 +141,9 @@ export default function AttendanceLogger({ year = new Date().getFullYear(), mont
                 .filter((doc: any) => !doc.data().isDeleted)
                 .map((doc: any) => ({ id: doc.id, ...doc.data() }));
             setStudents(fetchedStudents);
-        }, (error: any) => {
-// /* console.error */ ("Error fetching students: ", error);
+            StorageService.saveCachedSchoolStudents(selectedSection.id, fetchedStudents);
+        }, () => {
+            // Silently maintain local cache on network drop
         });
         
     }, [selectedSection]);
@@ -195,8 +207,9 @@ export default function AttendanceLogger({ year = new Date().getFullYear(), mont
             (error: any) => {
                 if (currentFetchId !== fetchIdRef.current) return;
                 setLoading(false);
-// /* console.error */ ("Error listening to attendance changes:", error);
-                toast.error("Failed to sync attendance in real-time.");
+                // Silently fallback to local offline mode during morning network handshake
+                // Never surface disruptive error banners for temporary Wi-Fi drops
+                console.warn('[AttendanceLogger] Live sync offline; operating from local cache:', error?.message);
             }
         );
 

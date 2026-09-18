@@ -1,5 +1,5 @@
 import { useSchoolId } from '../hooks/useSchoolId';
-import React, { createContext, useContext, useEffect, ReactNode, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthProvider';
 import { useUserSettings, useUpdateUserSettings, useTimetable, useUpdateTimetable } from '../lib/api/queries';
 
@@ -18,12 +18,35 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }: any) => {
     const { currentUser } = useAuth();
     
+    // Hardware-bound room identity (resolved locally from hostname or board-config.json)
+    const [hardwareSection, setHardwareSection] = useState<any>(() => {
+        try {
+            const cached = localStorage.getItem('genatis_hardware_section');
+            return cached ? JSON.parse(cached) : null;
+        } catch {
+            return null;
+        }
+    });
+
+    useEffect(() => {
+        if (window.electronAPI?.invoke) {
+            window.electronAPI.invoke('get-hardware-config').then((config: any) => {
+                if (config?.assignedSection) {
+                    setHardwareSection(config.assignedSection);
+                    try {
+                        localStorage.setItem('genatis_hardware_section', JSON.stringify(config.assignedSection));
+                    } catch {}
+                }
+            }).catch(() => {});
+        }
+    }, []);
+
     // React Query hooks
     const schoolId = useSchoolId();
     const { data: userSettings } = useUserSettings(currentUser?.uid, schoolId);
 
-    // If the account specifies a section, strictly lock it to that section
-    const lockedSection = useMemo(() => resolveAccountSection(currentUser), [currentUser]);
+    // If the account or local hardware specifies a section, lock to that section
+    const lockedSection = useMemo(() => resolveAccountSection(currentUser) || hardwareSection, [currentUser, hardwareSection]);
     const isSectionLocked = Boolean(lockedSection);
     const selectedSection = lockedSection || userSettings?.selectedSection || null;
 

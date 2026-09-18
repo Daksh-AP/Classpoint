@@ -19,7 +19,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }: an
             return null;
         }
     });
-    const [isLoading, setIsLoading] = useState(true);
+    // STALE-WHILE-REVALIDATE: If cached profile exists, paint immediately (isLoading = false)
+    // Background revalidation in onAuthStateChanged will silently sync any cloud updates
+    const [isLoading, setIsLoading] = useState(() => {
+        try {
+            return !localStorage.getItem('cached_genatis_user');
+        } catch {
+            return true;
+        }
+    });
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user: any) => {

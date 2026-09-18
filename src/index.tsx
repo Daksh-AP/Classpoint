@@ -30,7 +30,23 @@ if ((import.meta.env.VITE_SENTRY_DSN as any) && (import.meta.env.VITE_SENTRY_DSN
   }
 }
 
-const queryClient = new QueryClient();
+// Configure TanStack Query with exponential backoff + randomized jitter
+// Formula: min(1000 * 2^attempt + random(0, 2000ms), 30000ms)
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+      retryDelay: (attemptIndex) => Math.min(1000 * (2 ** attemptIndex) + Math.random() * 2000, 30000),
+      networkMode: 'offlineFirst',
+      refetchOnWindowFocus: false, // Prevents 80 boards storming backend on window focus switch
+    },
+    mutations: {
+      networkMode: 'offlineFirst',
+      retry: 2,
+      retryDelay: (attemptIndex) => Math.min(1000 * (2 ** attemptIndex) + Math.random() * 2000, 15000),
+    }
+  }
+});
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(

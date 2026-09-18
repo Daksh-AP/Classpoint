@@ -5,6 +5,14 @@ import { db } from '../../firebase';
 export const useUserSettings = (uid?: string, schoolId?: string) => {
   return useQuery({
     queryKey: ['userSettings', uid, schoolId],
+    initialData: () => {
+      if (!uid) return null;
+      try {
+        const local = localStorage.getItem(`userSettings_${uid}`);
+        if (local) return JSON.parse(local);
+      } catch {}
+      return undefined;
+    },
     queryFn: async () => {
       if (!uid) return null;
 
@@ -13,7 +21,11 @@ export const useUserSettings = (uid?: string, schoolId?: string) => {
         try {
           const ref = doc(db, 'schools', schoolId, 'user_settings', uid);
           const snap = await getDoc(ref);
-          if (snap.exists()) return snap.data();
+          if (snap.exists()) {
+            const data = snap.data();
+            try { localStorage.setItem(`userSettings_${uid}`, JSON.stringify(data)); } catch {}
+            return data;
+          }
         } catch {
           // ignore permissions
         }
@@ -23,7 +35,11 @@ export const useUserSettings = (uid?: string, schoolId?: string) => {
       try {
         const rootRef = doc(db, 'user_settings', uid);
         const rootSnap = await getDoc(rootRef);
-        if (rootSnap.exists()) return rootSnap.data();
+        if (rootSnap.exists()) {
+          const data = rootSnap.data();
+          try { localStorage.setItem(`userSettings_${uid}`, JSON.stringify(data)); } catch {}
+          return data;
+        }
       } catch {
         // ignore
       }
@@ -107,6 +123,16 @@ export const useTimetable = (uid?: string, schoolId?: string, selectedSectionId?
 
   return useQuery({
     queryKey: ['timetable', uid, schoolId, selectedSectionId, boardDocId],
+    // STALE-WHILE-REVALIDATE: Immediately paint cached timetable on frame 0 (<500ms boot)
+    initialData: () => {
+      try {
+        const local = (boardDocId && localStorage.getItem(`timetableData_${boardDocId}`)) ||
+                      (uid && localStorage.getItem(`timetableData_${uid}`)) ||
+                      localStorage.getItem('timetableData');
+        if (local) return JSON.parse(local);
+      } catch {}
+      return undefined;
+    },
     queryFn: async () => {
       // 1. Try smartboard document for the selected section (e.g. board_g9_whiz1)
       if (boardDocId) {
@@ -116,6 +142,7 @@ export const useTimetable = (uid?: string, schoolId?: string, selectedSectionId?
           if (boardSnap.exists()) {
             const data = boardSnap.data();
             if (data?.sections && Object.keys(data.sections).length > 0) {
+              try { localStorage.setItem(`timetableData_${boardDocId}`, JSON.stringify(data)); } catch {}
               return data;
             }
           }
@@ -130,21 +157,33 @@ export const useTimetable = (uid?: string, schoolId?: string, selectedSectionId?
           try {
             const schoolBoardRef = doc(db, 'schools', schoolId, 'timetables', boardDocId);
             const snap = await getDoc(schoolBoardRef);
-            if (snap.exists()) return snap.data();
+            if (snap.exists()) {
+              const data = snap.data();
+              try { localStorage.setItem(`timetableData_${boardDocId}`, JSON.stringify(data)); } catch {}
+              return data;
+            }
           } catch {}
         }
         if (selectedSectionId) {
           try {
             const secRef = doc(db, 'schools', schoolId, 'timetables', selectedSectionId);
             const snap = await getDoc(secRef);
-            if (snap.exists()) return snap.data();
+            if (snap.exists()) {
+              const data = snap.data();
+              try { localStorage.setItem(`timetableData_${selectedSectionId}`, JSON.stringify(data)); } catch {}
+              return data;
+            }
           } catch {}
         }
         if (uid) {
           try {
             const schoolRef = doc(db, 'schools', schoolId, 'timetables', uid);
             const snap = await getDoc(schoolRef);
-            if (snap.exists()) return snap.data();
+            if (snap.exists()) {
+              const data = snap.data();
+              try { localStorage.setItem(`timetableData_${uid}`, JSON.stringify(data)); } catch {}
+              return data;
+            }
           } catch {}
         }
       }
@@ -154,7 +193,11 @@ export const useTimetable = (uid?: string, schoolId?: string, selectedSectionId?
         try {
           const rootRef = doc(db, 'timetables', uid);
           const rootSnap = await getDoc(rootRef);
-          if (rootSnap.exists()) return rootSnap.data();
+          if (rootSnap.exists()) {
+            const data = rootSnap.data();
+            try { localStorage.setItem(`timetableData_${uid}`, JSON.stringify(data)); } catch {}
+            return data;
+          }
         } catch {}
       }
 
@@ -169,7 +212,7 @@ export const useTimetable = (uid?: string, schoolId?: string, selectedSectionId?
       return null;
     },
     enabled: !!uid || !!selectedSectionId || !!boardDocId,
-    staleTime: 1000 * 60 * 2,
+    staleTime: 1000 * 60 * 5, // 5 min cache
   });
 };
 

@@ -354,24 +354,86 @@ ipcMain.handle('open-path', async (event, filePath) => {
   }
 });
 
-// Hardware Identity for Deep Freeze Amnesia Bypass
+// Hardware Identity & Local Room Config Resolution for Zero-Network Boot
+let cachedHardwareIdentity = null;
+
+function resolveHardwareRoomIdentity() {
+  const hostname = os.hostname();
+  let config = null;
+
+  // 1. Check candidate persistent config paths
+  const configPaths = [
+    process.env.GENATIS_ROOM_CONFIG,
+    persistentRoot ? path.join(persistentRoot, 'board-config.json') : null,
+    'C:\\GenatisData\\board-config.json',
+    path.join(app.getPath('userData'), 'board-config.json'),
+    path.join(__dirname, 'board-config.json')
+  ].filter(Boolean);
+
+  for (const cfgPath of configPaths) {
+    try {
+      if (fs.existsSync(cfgPath)) {
+        const raw = fs.readFileSync(cfgPath, 'utf8');
+        config = JSON.parse(raw);
+        console.log(`[HARDWARE-IDENTITY] Loaded local room config from ${cfgPath}:`, config);
+        break;
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // 2. If no config file, extract from hostname pattern:
+  // e.g. FKS-ROOM-9-WHIZ1 -> Grade 9 Whiz 1
+  // e.g. ROOM-6A -> Grade 6 A
+  // e.g. BOARD-G9-WHIZ1 -> Grade 9 Whiz 1
+  if (!config) {
+    const host = hostname.toUpperCase();
+    const match = host.match(/(?:ROOM|BOARD|G)[-_]?(?:GRADE)?(\d+)[-_]?([A-Z]+)(\d*)/i);
+    if (match) {
+      const grade = match[1];
+      const type = match[2].charAt(0).toUpperCase() + match[2].slice(1).toLowerCase();
+      const num = match[3] ? parseInt(match[3], 10) : 1;
+      config = {
+        id: `grade${grade}-${type.toLowerCase()}${num}`,
+        name: `Grade ${grade} ${type} ${num}`,
+        grade: `grade${grade}`,
+        type,
+        number: num,
+        source: 'hostname'
+      };
+    }
+  }
+
+  return {
+    hostname,
+    assignedSection: config || null
+  };
+}
+
+ipcMain.handle('get-hardware-config', () => {
+  return resolveHardwareRoomIdentity();
+});
+
 ipcMain.handle('get-machine-hardware-id', async () => {
+  if (cachedHardwareIdentity) return cachedHardwareIdentity;
   const hostname = os.hostname();
   let uuid = '';
   try {
-    uuid = execSync('powershell.exe -NoProfile -Command "(Get-CimInstance Win32_ComputerSystemProduct).UUID"', { timeout: 4000, encoding: 'utf8' }).trim();
+    uuid = execSync('powershell.exe -NoProfile -Command "(Get-CimInstance Win32_ComputerSystemProduct).UUID"', { timeout: 1500, encoding: 'utf8' }).trim();
   } catch (e) {
     try {
-      uuid = execSync('wmic csproduct get uuid', { timeout: 4000, encoding: 'utf8' }).replace(/UUID|\r|\n|\s/gi, '').trim();
+      uuid = execSync('wmic csproduct get uuid', { timeout: 1500, encoding: 'utf8' }).replace(/UUID|\r|\n|\s/gi, '').trim();
     } catch (e2) {
       uuid = hostname;
     }
   }
-  return {
+  cachedHardwareIdentity = {
     hostname,
     uuid: uuid || hostname,
     machineId: `${hostname}_${uuid || 'default'}`
   };
+  return cachedHardwareIdentity;
 });
 
 // Dynamic Click-Through for Transparent Overlay Windows (prevents digitizer hit-barriers)

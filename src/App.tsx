@@ -125,8 +125,12 @@ function App() {
       }, { merge: true }).catch(() => {});
     };
 
-    // Send initial status immediately
-    sendHeartbeat('online');
+    // Send initial status with randomized jitter (5s - 35s)
+    // Prevents an 80-smartboard simultaneous morning power-on spike against local router and Firestore
+    const initialJitterMs = Math.floor(Math.random() * 30000) + 5000;
+    const initialJitterTimer = setTimeout(() => {
+      sendHeartbeat('online');
+    }, initialJitterMs);
 
     // 2-minute recurring heartbeat (keeps admin fleet status fresh while conserving Firestore writes)
     const intervalId = setInterval(() => {
@@ -146,6 +150,7 @@ function App() {
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
+      clearTimeout(initialJitterTimer);
       clearInterval(intervalId);
       window.removeEventListener('online', handleNetworkOnline);
       window.removeEventListener('offline', handleNetworkOffline);

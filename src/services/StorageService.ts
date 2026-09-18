@@ -283,6 +283,23 @@ export class StorageService {
     }
   }
 
+  // Local synchronous caching for instant offline paint (<500ms)
+  static getCachedSchoolStudents(sectionId: string): any[] {
+    if (!sectionId) return [];
+    const cached = this.safeGetItem(`school_students_${sectionId}`);
+    if (cached) {
+      try {
+        return JSON.parse(cached);
+      } catch (e) {}
+    }
+    return [];
+  }
+
+  static saveCachedSchoolStudents(sectionId: string, students: any[]): void {
+    if (!sectionId || !students) return;
+    this.safeSetItem(`school_students_${sectionId}`, JSON.stringify(students));
+  }
+
   // New method (School-wide / Attendance Logger specific)
   static async getSchoolStudents(section: any) {
     if (!section || !section.grade || !section.id) return [];
@@ -295,10 +312,11 @@ export class StorageService {
       const q = query(studentsRef, orderBy('name'));
       const querySnapshot = await getDocs(q);
 
-      return querySnapshot.docs.filter((doc: any) => !doc.data().isDeleted).map((doc: any) => ({ id: doc.id, ...doc.data() }));
+      const students = querySnapshot.docs.filter((doc: any) => !doc.data().isDeleted).map((doc: any) => ({ id: doc.id, ...doc.data() }));
+      this.saveCachedSchoolStudents(section.id, students);
+      return students;
     } catch (error) {
-// /* console.error */ ('🔥 Failed to load school students from Firestore:', error);
-      return [];
+      return this.getCachedSchoolStudents(section.id);
     }
   }
 
