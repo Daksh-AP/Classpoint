@@ -267,9 +267,11 @@ export default function AttendanceLogger({ year = new Date().getFullYear(), mont
         try {
             const gradeNum = getGradeNumber(selectedSection.grade);
             if (!gradeNum) throw new Error('Invalid grade value');
+            const currentSchoolId = schoolId || 'default_school';
             const studentsPath = paths.students(gradeNum, selectedSection.id);
             await setDoc(doc(collection(db, studentsPath)), {
                 name: newStudentName.trim(),
+                schoolId: currentSchoolId,
                 createdAt: new Date().toISOString()
             });
             setNewStudentName('');
@@ -310,6 +312,7 @@ export default function AttendanceLogger({ year = new Date().getFullYear(), mont
                                 try {
                                     const gradeNum = getGradeNumber(selectedSection.grade);
                                     if (!gradeNum) throw new Error('Invalid grade value');
+                                    const currentSchoolId = schoolId || 'default_school';
                                     const studentsPath = paths.students(gradeNum, selectedSection.id);
                                     const batch = writeBatch(db);
                                     
@@ -317,6 +320,7 @@ export default function AttendanceLogger({ year = new Date().getFullYear(), mont
                                         const newStudentRef = doc(collection(db, studentsPath));
                                         batch.set(newStudentRef, {
                                             name: name,
+                                            schoolId: currentSchoolId,
                                             createdAt: new Date().toISOString()
                                         });
                                     });

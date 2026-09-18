@@ -4515,6 +4515,11 @@ p {
     line-height: 2.5rem;
   }
 
+  .md\:text-6xl{
+    font-size: 3.75rem;
+    line-height: 1;
+  }
+
   .md\:text-7xl{
     font-size: 4.5rem;
     line-height: 1;
@@ -4527,11 +4532,6 @@ p {
   .md\:text-base{
     font-size: 1rem;
     line-height: 1.5rem;
-  }
-
-  .md\:text-6xl{
-    font-size: 3.75rem;
-    line-height: 1;
   }
 
   .md\:text-sm{
