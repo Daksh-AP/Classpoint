@@ -1,13 +1,15 @@
 {
     "name": "genatis-board",
     "version": "1.0.0",
+    "description": "Genatis Board — Smartboard app for classroom instruction and attendance",
+    "author": "Genatis",
     "private": true,
     "homepage": "./",
     "scripts": {
         "start": "npx concurrently \"npm run watch:css\" \"npm run react-start\" \"wait-on http://localhost:3000 && npm run electron-start\"",
         "react-start": "vite",
         "electron-start": "electron .",
-        "build": "npm run build:css && vite build",
+        "build": "npm run build:css && vite build && node -e \"const fs=require('fs'); fs.copyFileSync('electron.cjs', 'public/electron.js'); fs.copyFileSync('electron.cjs', 'build/electron.js');\"",
         "test": "vitest run",
         "test:coverage": "vitest run --coverage",
         "test:e2e": "playwright test",
@@ -52,7 +54,7 @@
         "@types/jest": "^30.0.0",
         "@types/node": "^20.19.43",
         "@vitejs/plugin-react": "^6.0.4",
-        "electron": "^35.7.5",
+        "electron": "35.7.5",
         "electron-builder": "^24.13.3",
         "jsdom": "^29.1.1",
         "postcss-cli": "^11.0.1",
@@ -69,11 +71,17 @@
     "build": {
         "appId": "com.genatis.app",
         "productName": "Genatis",
+        "electronVersion": "35.7.5",
         "asar": false,
-        "extends": "react-cra",
+        "directories": {
+            "output": "dist"
+        },
         "files": [
-            "build",
+            "build/**/*",
+            "electron.cjs",
             "public/electron.js",
+            "public/preload.js",
+            "public/icon.png",
             "package.json"
         ],
         "win": {

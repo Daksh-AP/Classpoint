@@ -9,12 +9,16 @@ if (process.env.VITE_SENTRY_DSN && process.env.VITE_SENTRY_DSN.startsWith('http'
     console.error('[SENTRY] Failed to initialize main process Sentry:', err);
   }
 }
-const { app, BrowserWindow, ipcMain, desktopCapturer, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, desktopCapturer, screen, Menu, MenuItem } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const { execSync } = require('child_process');
 console.log('[MAIN] electron.cjs loaded');
+
+// Completely disable and remove default Electron application menu (File, Edit, View, Window, Help)
+// Ensures no developer toolbar or Electron menu bar is visible on any window
+Menu.setApplicationMenu(null);
 
 // --- Industrial OPS Hardening: ThawSpace / Persistent Partition Detection ---
 // School OPS panels running Deep Freeze or UWF restore C:\ on reboot.
@@ -108,42 +112,94 @@ const isDev = process.env.NODE_ENV === 'development' || process.defaultApp || /[
 let mainWindow;
 let overlayWindow;
 
+function resolvePreloadPath() {
+  const candidates = [
+    path.join(__dirname, 'public', 'preload.js'),
+    path.join(__dirname, 'preload.js'),
+    path.join(__dirname, 'build', 'preload.js'),
+    path.join(__dirname, '..', 'public', 'preload.js')
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p)) return p;
+  }
+  return path.join(__dirname, 'public', 'preload.js');
+}
+
+function resolveIndexPath() {
+  const candidates = [
+    path.join(__dirname, 'build', 'index.html'),
+    path.join(__dirname, 'index.html'),
+    path.join(__dirname, '..', 'build', 'index.html')
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p)) return p;
+  }
+  return path.join(__dirname, 'build', 'index.html');
+}
+
 function createMainWindow() {
+  const preloadPath = resolvePreloadPath();
+  const iconPath = fs.existsSync(path.join(__dirname, 'public', 'icon.png'))
+    ? path.join(__dirname, 'public', 'icon.png')
+    : path.join(__dirname, 'build', 'icon.png');
+
   mainWindow = new BrowserWindow({
     width: 1920,
     height: 1080,
-    icon: path.join(__dirname, 'public', 'icon.png'),
+    autoHideMenuBar: true,
+    icon: iconPath,
     webPreferences: {
       zoomFactor: 1.0,
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'public', 'preload.js'),
+      preload: preloadPath,
       webSecurity: !isDev,
-      webviewTag: true
+      webviewTag: true,
+      devTools: isDev // Completely disabled in production
     },
     show: false,
   });
 
   const startUrl = isDev
     ? 'http://localhost:3000'
-    : `file://${path.join(__dirname, 'build/index.html')}`;
+    : `file://${resolveIndexPath()}`;
 
   mainWindow.loadURL(startUrl);
 
-  // Disable the default menu bar
+  // Disable the default menu bar completely (removes developer toolbar)
   mainWindow.setMenuBarVisibility(false);
   mainWindow.removeMenu();
+  mainWindow.setAutoHideMenuBar(true);
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
   });
 
-  // Add Context Menu for saving images
-  mainWindow.webContents.on('context-menu', (event, params) => {
-    const { Menu, MenuItem } = require('electron');
-    const menu = new Menu();
+  // Block Developer Tools and accidental reloads in production
+  if (!isDev) {
+    mainWindow.webContents.on('devtools-opened', () => {
+      mainWindow.webContents.closeDevTools();
+    });
 
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+      const isDevTools =
+        input.key === 'F12' ||
+        (input.control && input.shift && ['i', 'j', 'c'].includes(input.key.toLowerCase()));
+
+      const isReload =
+        input.key === 'F5' ||
+        (input.control && input.key.toLowerCase() === 'r');
+
+      if (isDevTools || isReload) {
+        event.preventDefault();
+      }
+    });
+  }
+
+  // Add Context Menu for saving images (suppress default inspect menu elsewhere in production)
+  mainWindow.webContents.on('context-menu', (event, params) => {
     if (params.mediaType === 'image') {
+      const menu = new Menu();
       menu.append(new MenuItem({
         label: 'Save Image to Resource Hub',
         click: () => {
@@ -151,6 +207,8 @@ function createMainWindow() {
         }
       }));
       menu.popup();
+    } else if (!isDev) {
+      event.preventDefault();
     }
   });
 
@@ -174,19 +232,24 @@ function createOverlayWindow() {
     alwaysOnTop: true,
     skipTaskbar: true,
     resizable: false,
+    autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'public', 'preload.js'),
+      preload: resolvePreloadPath(),
       webSecurity: !isDev,
+      devTools: isDev
     },
   });
 
+  overlayWindow.setMenuBarVisibility(false);
+  overlayWindow.removeMenu();
+  overlayWindow.setAutoHideMenuBar(true);
+
   overlayWindow.setIgnoreMouseEvents(false);
-  // overlayWindow.maximize(); // Removed maximization for widget mode = isDev
   const overlayUrl = isDev
     ? 'http://localhost:3000/#/overlay'
-    : `file://${path.join(__dirname, 'build/index.html')}#/overlay`;
+    : `file://${resolveIndexPath()}#/overlay`;
 
   overlayWindow.loadURL(overlayUrl);
 
