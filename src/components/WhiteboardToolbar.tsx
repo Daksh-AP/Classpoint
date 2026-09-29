@@ -18,8 +18,8 @@ export const WhiteboardToolbar = ({
     historyStep, historyLength, colors
 }: any) => {
     return (
-        <div className={`fixed top-0 left-1/2 transform -translate-x-1/2 flex flex-col items-center transition-transform duration-300 ease-in-out z-50 ${isToolbarOpen ? 'translate-y-4' : 'translate-y-[calc(-100%+3rem)]'} max-w-[95vw] md:max-w-max`}>
-            <div className="bg-zen-surface/90 backdrop-blur-3xl border border-zen-text/10 p-3 md:p-5 rounded-[32px] shadow-2xl flex flex-col gap-3 md:gap-4 w-full">
+        <div className={`fixed top-0 left-1/2 transform -translate-x-1/2 flex flex-col items-center transition-transform duration-150 ease-in-out z-50 ${isToolbarOpen ? 'translate-y-4' : 'translate-y-[calc(-100%+3rem)]'} max-w-[95vw] md:max-w-max`}>
+            <div className="bg-zen-surface border border-zen-text/15 p-3 md:p-5 rounded-[32px] shadow-lg flex flex-col gap-3 md:gap-4 w-full">
                 
                 {/* Top Row: Tools & Shapes */}
                 <div className="flex flex-wrap items-center justify-center gap-x-2 md:gap-x-4 gap-y-2">
@@ -125,7 +125,7 @@ export const WhiteboardToolbar = ({
             {/* Toolbar Toggle Button */}
             <button
                 onClick={() => setIsToolbarOpen(!isToolbarOpen)}
-                className="mt-2 bg-zen-surface/90 backdrop-blur border border-zen-text/10 p-1.5 rounded-full shadow-md text-zen-text-2 hover:text-zen-text hover:bg-zen-surface transition-colors"
+                className="mt-2 bg-zen-surface border border-zen-text/15 p-1.5 rounded-full shadow-sm text-zen-text-2 hover:text-zen-text hover:bg-zen-surface transition-colors"
             >
                 {isToolbarOpen ? <ChevronUp className="w-4 h-4 md:w-5 md:h-5" /> : <ChevronDown className="w-4 h-4 md:w-5 md:h-5" />}
             </button>

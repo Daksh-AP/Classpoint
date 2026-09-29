@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 
 const VideoViewer = ({ videoUrl, onClose }: any) => {
     return (
-        <div className="fixed inset-0 z-[100] flex flex-col bg-black/90 backdrop-blur-xl">
+        <div className="fixed inset-0 z-[100] flex flex-col bg-black/95">
              <div className="flex items-center justify-end p-4 border-b border-white/10 shrink-0 z-50">
                  <button
                      onClick={onClose}
@@ -17,7 +17,7 @@ const VideoViewer = ({ videoUrl, onClose }: any) => {
                      src={videoUrl} 
                      controls 
                      autoPlay 
-                     className="max-w-full max-h-[85vh] rounded-lg shadow-2xl"
+                     className="max-w-full max-h-[85vh] rounded-lg shadow-lg"
                  />
              </div>
         </div>

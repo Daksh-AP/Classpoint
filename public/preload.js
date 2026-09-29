@@ -2,7 +2,23 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   invoke: (channel, data) => {
-    const validChannels = ['show-widget', 'hide-widget', 'close-widget', 'save-file', 'open-path', 'check-for-updates', 'download-update', 'install-update', 'set-widget-size', 'set-widget-minimized', 'get-start-on-login', 'get-machine-hardware-id', 'get-hardware-config'];
+    const validChannels = [
+      'show-widget',
+      'hide-widget',
+      'close-widget',
+      'save-file',
+      'open-path',
+      'check-for-updates',
+      'download-update',
+      'install-update',
+      'get-app-version',
+      'set-widget-size',
+      'set-widget-minimized',
+      'get-start-on-login',
+      'get-machine-hardware-id',
+      'get-hardware-config',
+      'open-display-settings'
+    ];
     if (validChannels.includes(channel)) {
       return ipcRenderer.invoke(channel, data);
     }
@@ -14,7 +30,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
     }
   },
   on: (channel, func) => {
-    const validChannels = ['widget-closed', 'download-complete', 'screen-captured', 'request-widget-sync', 'broadcast-widget-data', 'widget-data-update'];
+    const validChannels = [
+      'widget-closed',
+      'download-complete',
+      'screen-captured',
+      'request-widget-sync',
+      'broadcast-widget-data',
+      'widget-data-update',
+      'update-available',
+      'update-not-available',
+      'download-progress',
+      'update-downloaded',
+      'update-error'
+    ];
     if (validChannels.includes(channel)) {
       // Deliberately strip event as it includes `sender` 
       const subscription = (event, ...args) => func(event, ...args);

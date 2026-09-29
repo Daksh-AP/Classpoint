@@ -29,6 +29,7 @@
         "@types/react-dom": "^19.2.3",
         "@types/react-window": "^1.8.8",
         "autoprefixer": "^10.4.21",
+        "electron-updater": "^6.8.9",
         "file-saver": "^2.0.5",
         "firebase": "^12.5.0",
         "framer-motion": "^12.23.24",
@@ -101,7 +102,14 @@
             "createDesktopShortcut": true,
             "createStartMenuShortcut": true,
             "shortcutName": "Genatis"
-        }
+        },
+        "publish": [
+            {
+                "provider": "github",
+                "owner": "Daksh-AP",
+                "repo": "Classpoint"
+            }
+        ]
     },
     "browserslist": {
         "production": [

@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Bell, Clock, User, CheckCircle, X, PlusCircle, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -34,12 +34,11 @@ export default function PeriodHandoverModal({
   return (
     <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[250] pointer-events-auto select-none max-w-2xl w-[94vw] sm:w-[90vw]">
       <motion.div
-        initial={{ opacity: 0, y: -25, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -20, scale: 0.96 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-        className="bg-[var(--surface)]/95 backdrop-blur-xl border border-[var(--accent)]/40 rounded-2xl p-4 sm:p-5 shadow-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-        style={{ boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 25px -5px var(--accent-soft)' }}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.08, ease: 'easeOut' }}
+        className="bg-[var(--surface)] border border-[var(--accent)]/40 rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
       >
         {/* Left Info: Icon & Class Details */}
         <div className="flex items-center gap-3.5 flex-1 min-w-0">

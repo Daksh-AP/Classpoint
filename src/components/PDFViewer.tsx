@@ -420,15 +420,15 @@ const PDFViewer = ({ fileUrl, onClose, onSave }: any) => {
             {/* Document Render Area */}
             <div className="flex-1 relative overflow-hidden bg-dots-pattern flex items-center justify-center py-8" ref={containerRef}>
                 {loading && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center z-[200] bg-zen-surface/80 backdrop-blur-sm">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center z-[200] bg-zen-surface/95">
                         <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
-                        <p className="text-white font-medium text-lg shadow-black drop-shadow-md">Loading PDF Engine...</p>
+                        <p className="text-white font-medium text-lg drop-shadow-sm">Loading PDF Engine...</p>
                     </div>
                 )}
                 
                 <div
                     ref={panTargetRef}
-                    className="relative shadow-2xl transition-transform duration-75 origin-center"
+                    className="relative shadow-lg transition-transform duration-75 origin-center"
                     style={{
                         transform: `scale(${scale}) translate(${position.x}px, ${position.y}px)`,
                         cursor: tool === 'move' ? (isDragging ? 'grabbing' : 'grab') : 'crosshair'

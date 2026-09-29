@@ -83,7 +83,7 @@ export default function AlertOverlay({ currentUser }: AlertOverlayProps) {
         position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
         background: 'rgba(0,0,0,0.85)', zIndex: 999999,
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        padding: '2rem', backdropFilter: 'blur(10px)',
+        padding: '2rem',
         animation: 'fadeIn 0.3s ease-out'
       }}
     >

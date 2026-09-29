@@ -135,9 +135,11 @@ const Widget = ({ selectedSection: propSection, timetableData: propData, isOverl
   if (!selectedSection) {
     if (isOverlay) {
       return (
-        <div className="w-full h-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl text-gray-900 dark:text-white flex flex-col items-center justify-center border border-gray-200/50 dark:border-white/10 relative overflow-hidden">
-          {/* Background Elements */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+        <div 
+          className="w-full h-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col items-center justify-center border border-gray-200/50 dark:border-white/10 relative overflow-hidden"
+          onMouseEnter={() => (window as any).electron?.send('set-ignore-mouse-events', false)}
+          onMouseLeave={() => (window as any).electron?.send('set-ignore-mouse-events', true, { forward: true })}
+        >
 
           <div className="absolute top-4 right-4 z-20" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
             <button
@@ -177,14 +179,14 @@ const Widget = ({ selectedSection: propSection, timetableData: propData, isOverl
 
   if (isOverlay) {
     return (
-      <div className="w-full h-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl text-gray-900 dark:text-white flex flex-col border border-gray-200/50 dark:border-white/10 overflow-hidden relative font-sans selection:bg-primary-500/30">
-        {/* Dynamic Background Gradient */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/10 dark:bg-primary-500/20 blur-[80px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-accent-500/5 dark:bg-accent-500/10 blur-[60px] rounded-full pointer-events-none translate-y-1/3 -translate-x-1/3"></div>
-
+      <div 
+        className="w-full h-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col border border-gray-200/80 dark:border-white/10 overflow-hidden relative font-sans selection:bg-primary-500/30"
+        onMouseEnter={() => (window as any).electron?.send('set-ignore-mouse-events', false)}
+        onMouseLeave={() => (window as any).electron?.send('set-ignore-mouse-events', true, { forward: true })}
+      >
         {/* Header / Drag Area */}
         <div
-          className="flex items-center justify-between p-3 border-b border-gray-200/50 dark:border-white/5 bg-white/50 dark:bg-white/5 backdrop-blur-sm z-10"
+          className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-gray-800 z-10"
           style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
         >
           <div className="flex items-center space-x-2 text-gray-600 dark:text-white/70">
@@ -214,7 +216,7 @@ const Widget = ({ selectedSection: propSection, timetableData: propData, isOverl
             </div>
 
             {currentClass ? (
-              <div className="bg-white/50 dark:bg-white/5 rounded-2xl p-4 border border-gray-200/50 dark:border-white/5 shadow-md dark:shadow-lg backdrop-blur-md">
+              <div className="bg-gray-50 dark:bg-gray-800/80 rounded-2xl p-4 border border-gray-200 dark:border-white/10 shadow-sm">
                 <h1 className="text-2xl font-bold leading-tight mb-1 text-gray-900 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:to-gray-200">
                   {currentClass.subject}
                 </h1>

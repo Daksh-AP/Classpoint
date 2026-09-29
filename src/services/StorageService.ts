@@ -38,47 +38,54 @@ export class StorageService {
     return state.selectedSection || null;
   }
 
-  // Timetable Data Management (Now with Firestore)
+  // Timetable Data Management (Now with Local Offline Mirror + Firestore Sync)
   static async saveTimetableData(data: any) {
     const user = auth.currentUser;
-    if (!user) {
-// /* console.error */ ("No user logged in, cannot save timetable to Firestore.");
-      return;
-    }
+    const dataToSave = {
+      ...data,
+      savedAt: new Date().toISOString(),
+      ownerUid: user?.uid || 'offline_user',
+    };
+
+    // Always mirror to local persistent storage for zero-connectivity boots
+    this.safeSetItem(this.KEYS.TIMETABLE, JSON.stringify(dataToSave));
+
+    if (!user) return;
+
     try {
       const timetableRef = doc(db, 'schools', getSchoolId(), 'timetables', user.uid);
-      const dataToSave = {
-        ...data,
-        savedAt: new Date().toISOString(),
-        ownerUid: user.uid,
-      };
       await setDoc(timetableRef, dataToSave);
-// /* console.log */ ("✅ Timetable saved to Firestore");
     } catch (error) {
-// /* console.error */ ('🔥 Failed to save timetable data to Firestore:', error);
+      // Offline fallback maintained in local mirror
     }
   }
 
   static async getTimetableData() {
     const user = auth.currentUser;
-    if (!user) {
-// /* console.error */ ("No user logged in, cannot fetch timetable from Firestore.");
-      return null;
-    }
-    try {
-      const timetableRef = doc(db, 'schools', getSchoolId(), 'timetables', user.uid);
-      const docSnap = await getDoc(timetableRef);
-      if (docSnap.exists()) {
-// /* console.log */ ("📘 Timetable data fetched from Firestore");
-        return docSnap.data();
-      } else {
-// /* console.warn */ ("⚠️ No timetable data found in Firestore for this user.");
-        return null;
+
+    // Try online fetch if connected
+    if (user && (typeof navigator === 'undefined' || navigator.onLine)) {
+      try {
+        const timetableRef = doc(db, 'schools', getSchoolId(), 'timetables', user.uid);
+        const docSnap = await getDoc(timetableRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          this.safeSetItem(this.KEYS.TIMETABLE, JSON.stringify(data));
+          return data;
+        }
+      } catch (error) {
+        // Fallback to local mirror on network disconnection
       }
-    } catch (error) {
-// /* console.error */ ('🔥 Failed to load timetable data from Firestore:', error);
-      return null;
     }
+
+    // Zero-Connectivity Fallback from local mirror
+    const cached = this.safeGetItem(this.KEYS.TIMETABLE);
+    if (cached) {
+      try {
+        return JSON.parse(cached);
+      } catch (e) {}
+    }
+    return null;
   }
 
   // In-Memory Fallback Mirror for sudden wall-switch / LevelDB corruption resilience

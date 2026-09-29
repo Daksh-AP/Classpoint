@@ -28,6 +28,7 @@ const Whiteboard = ({ onClose }: any) => {
     const [stickyNotes, setStickyNotes] = useState<any[]>([]);
     const [draggingNoteId, setDraggingNoteId] = useState<any>(null);
     const lastDragPos = useRef({ x: 0, y: 0 });
+    const activeStrokeRef = useRef<any>(null);
 
     // Text Editing State
     const [textEditing, setTextEditing] = useState<any | null>(null); // { id, x, y, text }
@@ -106,8 +107,10 @@ const Whiteboard = ({ onClose }: any) => {
         // Clear Screen
         context.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Apply Camera Transform
+        // Apply DPI scaling and Camera Transform
+        const dpr = window.devicePixelRatio || 1;
         context.save();
+        context.scale(dpr, dpr);
         context.translate(camera.x, camera.y);
         context.scale(camera.zoom, camera.zoom);
 
@@ -245,7 +248,31 @@ const Whiteboard = ({ onClose }: any) => {
 
         const id = elements.length;
         const newElement = createElement(id, x, y, x, y, tool);
-        setElements((prev: any) => [...prev, newElement]);
+        activeStrokeRef.current = newElement;
+
+        if (tool === 'pen' || tool === 'eraser') {
+            const canvas = canvasRef.current;
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    const dpr = window.devicePixelRatio || 1;
+                    ctx.save();
+                    ctx.scale(dpr, dpr);
+                    ctx.translate(camera.x, camera.y);
+                    ctx.scale(camera.zoom, camera.zoom);
+                    ctx.fillStyle = tool === 'eraser' ? '#ffffff' : color;
+                    if (tool === 'eraser') ctx.globalCompositeOperation = 'destination-out';
+                    else ctx.globalCompositeOperation = 'source-over';
+                    ctx.beginPath();
+                    const radius = (tool === 'eraser' ? lineWidth * 5 : lineWidth) / 2;
+                    ctx.arc(x, y, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+        } else {
+            setElements((prev: any) => [...prev, newElement]);
+        }
         setAction('drawing');
     };
 
@@ -260,29 +287,76 @@ const Whiteboard = ({ onClose }: any) => {
 
         if (action === 'drawing') {
             const { x, y } = getMouseCoordinates(e);
+            if (tool === 'pen' || tool === 'eraser') {
+                if (activeStrokeRef.current) {
+                    const pts = activeStrokeRef.current.points;
+                    const lastPt = pts[pts.length - 1];
+                    pts.push({ x, y });
+
+                    const canvas = canvasRef.current;
+                    if (canvas) {
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) {
+                            const dpr = window.devicePixelRatio || 1;
+                            ctx.save();
+                            ctx.scale(dpr, dpr);
+                            ctx.translate(camera.x, camera.y);
+                            ctx.scale(camera.zoom, camera.zoom);
+                            ctx.strokeStyle = tool === 'eraser' ? '#ffffff' : color;
+                            ctx.lineWidth = tool === 'eraser' ? lineWidth * 5 : lineWidth;
+                            ctx.lineCap = 'round';
+                            ctx.lineJoin = 'round';
+                            if (tool === 'eraser') ctx.globalCompositeOperation = 'destination-out';
+                            else ctx.globalCompositeOperation = 'source-over';
+                            ctx.beginPath();
+                            ctx.moveTo(lastPt.x, lastPt.y);
+                            ctx.lineTo(x, y);
+                            ctx.stroke();
+                            ctx.restore();
+                        }
+                    }
+                }
+                return;
+            }
+
             const index = elements.length - 1;
-            const { x1, y1 } = elements[index];
-            
-            const now = performance.now();
-            if (now - lastUpdateRef.current > 16) {
-                updateElement(elements[index].id, x1, y1, x, y, tool);
-                lastUpdateRef.current = now;
+            if (index >= 0 && elements[index]) {
+                const { x1, y1 } = elements[index];
+                const now = performance.now();
+                if (now - lastUpdateRef.current > 16) {
+                    updateElement(elements[index].id, x1, y1, x, y, tool);
+                    lastUpdateRef.current = now;
+                }
             }
         }
     };
 
     const handleMouseUp = (e: any) => {
         if (action === 'drawing') {
-            if (e && e.clientX !== undefined) {
-                const { x, y } = getMouseCoordinates(e);
-                const index = elements.length - 1;
-                const { x1, y1 } = elements[index];
-                updateElement(elements[index].id, x1, y1, x, y, tool);
+            if (tool === 'pen' || tool === 'eraser') {
+                if (activeStrokeRef.current) {
+                    const finishedStroke = activeStrokeRef.current;
+                    activeStrokeRef.current = null;
+                    setElements((prev) => {
+                        const next = [...prev, finishedStroke];
+                        addToHistory(next);
+                        return next;
+                    });
+                }
+            } else {
+                if (e && e.clientX !== undefined) {
+                    const { x, y } = getMouseCoordinates(e);
+                    const index = elements.length - 1;
+                    if (index >= 0 && elements[index]) {
+                        const { x1, y1 } = elements[index];
+                        updateElement(elements[index].id, x1, y1, x, y, tool);
+                    }
+                }
+                setElements((prev) => {
+                    addToHistory(prev);
+                    return prev;
+                });
             }
-            setElements((prev) => {
-                addToHistory(prev);
-                return prev;
-            });
         }
         setAction('none');
     };
@@ -312,7 +386,31 @@ const Whiteboard = ({ onClose }: any) => {
 
         const id = elements.length;
         const newElement = createElement(id, x, y, x, y, tool);
-        setElements((prev: any) => [...prev, newElement]);
+        activeStrokeRef.current = newElement;
+
+        if (tool === 'pen' || tool === 'eraser') {
+            const canvas = canvasRef.current;
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    const dpr = window.devicePixelRatio || 1;
+                    ctx.save();
+                    ctx.scale(dpr, dpr);
+                    ctx.translate(camera.x, camera.y);
+                    ctx.scale(camera.zoom, camera.zoom);
+                    ctx.fillStyle = tool === 'eraser' ? '#ffffff' : color;
+                    if (tool === 'eraser') ctx.globalCompositeOperation = 'destination-out';
+                    else ctx.globalCompositeOperation = 'source-over';
+                    ctx.beginPath();
+                    const radius = (tool === 'eraser' ? lineWidth * 5 : lineWidth) / 2;
+                    ctx.arc(x, y, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+        } else {
+            setElements((prev: any) => [...prev, newElement]);
+        }
         setAction('drawing');
     };
 
@@ -330,13 +428,46 @@ const Whiteboard = ({ onClose }: any) => {
 
         if (action === 'drawing') {
             const { x, y } = getTouchCoordinates(e);
+            if (tool === 'pen' || tool === 'eraser') {
+                if (activeStrokeRef.current) {
+                    const pts = activeStrokeRef.current.points;
+                    const lastPt = pts[pts.length - 1];
+                    pts.push({ x, y });
+
+                    const canvas = canvasRef.current;
+                    if (canvas) {
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) {
+                            const dpr = window.devicePixelRatio || 1;
+                            ctx.save();
+                            ctx.scale(dpr, dpr);
+                            ctx.translate(camera.x, camera.y);
+                            ctx.scale(camera.zoom, camera.zoom);
+                            ctx.strokeStyle = tool === 'eraser' ? '#ffffff' : color;
+                            ctx.lineWidth = tool === 'eraser' ? lineWidth * 5 : lineWidth;
+                            ctx.lineCap = 'round';
+                            ctx.lineJoin = 'round';
+                            if (tool === 'eraser') ctx.globalCompositeOperation = 'destination-out';
+                            else ctx.globalCompositeOperation = 'source-over';
+                            ctx.beginPath();
+                            ctx.moveTo(lastPt.x, lastPt.y);
+                            ctx.lineTo(x, y);
+                            ctx.stroke();
+                            ctx.restore();
+                        }
+                    }
+                }
+                return;
+            }
+
             const index = elements.length - 1;
-            const { x1, y1 } = elements[index];
-            
-            const now = performance.now();
-            if (now - lastUpdateRef.current > 16) {
-                updateElement(elements[index].id, x1, y1, x, y, tool);
-                lastUpdateRef.current = now;
+            if (index >= 0 && elements[index]) {
+                const { x1, y1 } = elements[index];
+                const now = performance.now();
+                if (now - lastUpdateRef.current > 16) {
+                    updateElement(elements[index].id, x1, y1, x, y, tool);
+                    lastUpdateRef.current = now;
+                }
             }
         }
     };
@@ -344,20 +475,34 @@ const Whiteboard = ({ onClose }: any) => {
     const handleTouchEnd = (e: any) => {
         e.preventDefault();
         if (action === 'drawing') {
-            if (e.changedTouches && e.changedTouches.length > 0) {
-                const touch = e.changedTouches[0];
-                const clientX = touch.clientX;
-                const clientY = touch.clientY;
-                const x = (clientX - camera.x) / camera.zoom;
-                const y = (clientY - camera.y) / camera.zoom;
-                const index = elements.length - 1;
-                const { x1, y1 } = elements[index];
-                updateElement(elements[index].id, x1, y1, x, y, tool);
+            if (tool === 'pen' || tool === 'eraser') {
+                if (activeStrokeRef.current) {
+                    const finishedStroke = activeStrokeRef.current;
+                    activeStrokeRef.current = null;
+                    setElements((prev) => {
+                        const next = [...prev, finishedStroke];
+                        addToHistory(next);
+                        return next;
+                    });
+                }
+            } else {
+                if (e.changedTouches && e.changedTouches.length > 0) {
+                    const touch = e.changedTouches[0];
+                    const clientX = touch.clientX;
+                    const clientY = touch.clientY;
+                    const x = (clientX - camera.x) / camera.zoom;
+                    const y = (clientY - camera.y) / camera.zoom;
+                    const index = elements.length - 1;
+                    if (index >= 0 && elements[index]) {
+                        const { x1, y1 } = elements[index];
+                        updateElement(elements[index].id, x1, y1, x, y, tool);
+                    }
+                }
+                setElements((prev) => {
+                    addToHistory(prev);
+                    return prev;
+                });
             }
-            setElements((prev) => {
-                addToHistory(prev);
-                return prev;
-            });
         }
         setAction('none');
     };
@@ -455,8 +600,15 @@ const Whiteboard = ({ onClose }: any) => {
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        const resizeCanvas = () => {
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = Math.round(window.innerWidth * dpr);
+            canvas.height = Math.round(window.innerHeight * dpr);
+            canvas.style.width = `${window.innerWidth}px`;
+            canvas.style.height = `${window.innerHeight}px`;
+            setCamera((prev: any) => ({ ...prev }));
+        };
+        resizeCanvas();
 
         // Lock body scroll
         document.body.style.overflow = 'hidden';
@@ -465,9 +617,7 @@ const Whiteboard = ({ onClose }: any) => {
         canvas.style.touchAction = 'none';
 
         const handleResize = () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            setCamera((prev: any) => ({ ...prev }));
+            resizeCanvas();
         };
 
         // Prevent default wheel behavior (browser zoom/scroll)
@@ -585,9 +735,9 @@ const Whiteboard = ({ onClose }: any) => {
 
             {/* Toolbar Container */}
             <div
-                className={`fixed top-0 left-1/2 transform -translate-x-1/2 flex flex-col items-center transition-transform duration-300 ease-in-out z-50 ${isToolbarOpen ? 'translate-y-4' : 'translate-y-[calc(-100%+3rem)]'} max-w-[95vw] md:max-w-max`}
+                className={`fixed top-0 left-1/2 transform -translate-x-1/2 flex flex-col items-center transition-transform duration-150 ease-in-out z-50 ${isToolbarOpen ? 'translate-y-4' : 'translate-y-[calc(-100%+3rem)]'} max-w-[95vw] md:max-w-max`}
             >
-                <div className="bg-zen-surface/90 backdrop-blur-3xl border border-zen-text/10 p-3 md:p-5 rounded-[32px] shadow-2xl flex flex-col gap-3 md:gap-4 w-full">
+                <div className="bg-zen-surface border border-zen-text/15 p-3 md:p-5 rounded-[32px] shadow-lg flex flex-col gap-3 md:gap-4 w-full">
 
                     {/* Top Row: Tools & Shapes */}
                     <div className="flex flex-wrap items-center justify-center gap-x-2 md:gap-x-4 gap-y-2">
@@ -711,7 +861,7 @@ const Whiteboard = ({ onClose }: any) => {
                 {/* Toggle Handle */}
                 <button
                     onClick={() => setIsToolbarOpen(!isToolbarOpen)}
-                    className="p-1.5 md:p-2.5 rounded-b-[20px] bg-zen-surface/90 backdrop-blur-3xl border-b border-x border-zen-text/10 text-zen-text-2 hover:text-zen-text transition-colors shadow-lg mt-0.5"
+                    className="p-1.5 md:p-2.5 rounded-b-[20px] bg-zen-surface border-b border-x border-zen-text/15 text-zen-text-2 hover:text-zen-text transition-colors shadow-sm mt-0.5"
                     title={isToolbarOpen ? "Minimize Toolbar" : "Show Toolbar"}
                 >
                     {isToolbarOpen ? <ChevronUp className="w-4 h-4 md:w-5 md:h-5" /> : <ChevronDown className="w-4 h-4 md:w-5 md:h-5" />}

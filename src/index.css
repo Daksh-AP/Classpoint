@@ -28,8 +28,8 @@
   --error: #c62828;
   --warning: #f57c00;
   --danger: #ef4444;
-  --glass-bg: rgba(255, 255, 255, 0.75);
-  --glass-modal-bg: rgba(252, 252, 249, 0.94);
+  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-modal-bg: rgba(252, 252, 249, 0.98);
   --glass-modal-border: rgba(255, 255, 255, 0.8);
   --glass-border: rgba(62, 62, 60, 0.08);
   --shadow: rgba(0, 0, 0, 0.08);
@@ -47,11 +47,11 @@
   --space-2xl: 48px;
   --space-3xl: 64px;
 
-  /* Motion */
-  --motion-fast: 120ms;
-  --motion-medium: 200ms;
-  --motion-slow: 320ms;
-  --ease-zen: cubic-bezier(0.25, 1, 0.5, 1);
+  /* Motion - Instantaneous for 4K OPS Smartboards */
+  --motion-fast: 0ms;
+  --motion-medium: 40ms;
+  --motion-slow: 70ms;
+  --ease-zen: cubic-bezier(0.2, 0, 0.2, 1);
 
   /* Radius */
   --radius-small: 8px;
@@ -61,7 +61,7 @@
 
   /* Elevation */
   --elevation-0: none;
-  --elevation-1: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -85,15 +85,15 @@
   --error: #f44336;
   --warning: #ff9800;
   --danger: #ef4444;
-  --glass-bg: rgba(30, 30, 30, 0.75);
-  --glass-modal-bg: rgba(22, 24, 28, 0.94);
+  --glass-bg: rgba(30, 30, 30, 0.95);
+  --glass-modal-bg: rgba(22, 24, 28, 0.98);
   --glass-modal-border: rgba(255, 255, 255, 0.12);
   --glass-border: rgba(255, 255, 255, 0.1);
   --radius-pill: 9999px;
   --shadow: rgba(0, 0, 0, 0.3);
   --scrollbar-thumb: rgba(224, 122, 95, 0.40);
   
-  --elevation-1: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* ═══════════════════════════════════════════════
@@ -102,6 +102,7 @@
 @layer base {
   * {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
@@ -113,8 +114,7 @@
     background-color: var(--bg);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color var(--motion-slow) var(--ease-zen),
-      color var(--motion-slow) var(--ease-zen);
+    touch-action: manipulation;
   }
 
   h1,
@@ -186,35 +186,27 @@
   }
 
   /* ═══════════════════════════════════════════════
-     ZEN CARD — Glassmorphism (hero/modal ONLY)
+     ZEN CARD — High-Performance Surface for 4K OPS
      ═══════════════════════════════════════════════ */
   .zen-card {
     background: var(--glass-bg);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-card);
-    box-shadow: var(--elevation-1);
-    transition: box-shadow var(--motion-medium) var(--ease-zen),
-      transform var(--motion-medium) var(--ease-zen);
+    box-shadow: 0 1px 3px var(--shadow);
   }
 
   .zen-card:hover {
-    box-shadow: 0 8px 32px var(--shadow);
-    transform: translateY(-1px);
+    box-shadow: 0 1px 3px var(--shadow);
   }
 
   /* ═══════════════════════════════════════════════
-     ZEN MODAL CARD — Frosted glass dialog surface
+     ZEN MODAL CARD — High-Contrast Non-Stutter Dialog
      ═══════════════════════════════════════════════ */
   .zen-modal-card {
     background: var(--glass-modal-bg);
-    backdrop-filter: blur(32px);
-    -webkit-backdrop-filter: blur(32px);
     border: 1px solid var(--glass-modal-border);
-    border-radius: 24px;
-    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--glass-modal-border) inset;
-    transition: all var(--motion-medium) var(--ease-zen);
+    border-radius: 20px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   }
 
   /* ═══════════════════════════════════════════════
@@ -224,7 +216,6 @@
     background: var(--surface);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-card);
-    transition: background var(--motion-fast) var(--ease-zen);
   }
 
   .zen-card-flat:hover {
@@ -247,35 +238,30 @@
     color: var(--text-primary);
     background: var(--surface);
     border: 1px solid var(--border);
-    box-shadow: 0 2px 8px var(--shadow);
+    box-shadow: 0 1px 2px var(--shadow);
     cursor: pointer;
-    transition: all var(--motion-fast) var(--ease-zen);
     position: relative;
     overflow: hidden;
   }
 
   .zen-btn:hover {
-    box-shadow: 0 4px 16px var(--shadow);
-    transform: translateY(-1px);
     background: var(--surface-hover);
+    box-shadow: 0 1px 2px var(--shadow);
   }
 
   .zen-btn:active {
-    transform: scale(0.97);
-    box-shadow: 0 1px 4px var(--shadow);
+    transform: scale(0.98);
   }
 
   .zen-btn-accent {
     background: var(--accent);
     color: #FFFFFF;
     border-color: transparent;
-    box-shadow: 0 3px 12px var(--accent-glow);
+    box-shadow: 0 1px 3px var(--accent-glow);
   }
 
   .zen-btn-accent:hover {
     background: var(--accent-hover);
-    box-shadow: 0 5px 18px var(--accent-glow);
-    filter: brightness(1.05);
   }
 
   /* ═══════════════════════════════════════════════
@@ -324,7 +310,6 @@
   .app-background {
     min-height: 100vh;
     background-color: var(--bg);
-    transition: background-color var(--motion-slow) var(--ease-zen);
   }
 }
 
@@ -389,20 +374,9 @@
   }
 }
 
-.theme-overlay-enter {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  pointer-events: none;
-  animation: theme-wipe-in 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
+.theme-overlay-enter,
 .theme-overlay-exit {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  pointer-events: none;
-  animation: theme-wipe-out 0.7s ease-out forwards;
+  display: none !important;
 }
 
 /* Widget Mode Overrides */
@@ -411,43 +385,48 @@
 }
 
 /* ═══════════════════════════════════════════════
-   PREMIUM ANIMATIONS
+   LOW-LATENCY ZERO-SCALE TRANSITIONS
    ═══════════════════════════════════════════════ */
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes scale-up {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
 .animate-fade-in {
-  animation: fade-in 0.6s var(--ease-zen) forwards;
+  animation: fade-in 0.06s ease-out forwards;
 }
 
 .animate-fade-up {
-  animation: fade-up 0.8s var(--ease-zen) forwards;
+  animation: fade-in 0.06s ease-out forwards;
 }
 
 .animate-scale-up {
-  animation: scale-up 0.4s var(--ease-zen) forwards;
+  animation: fade-in 0.06s ease-out forwards;
+}
+
+/* ═══════════════════════════════════════════════
+   SMARTBOARD ZERO-LAG ENGINE: GLOBALLY DISABLE BLURS & TOUCH DELAY
+   ═══════════════════════════════════════════════ */
+*, *::before, *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+[class*="backdrop-blur"],
+.zen-card,
+.zen-modal-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.board-performance-mode * {
+  animation-duration: 0.001s !important;
+  transition-duration: 0.001s !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001s !important;
+    transition-duration: 0.001s !important;
+  }
 }

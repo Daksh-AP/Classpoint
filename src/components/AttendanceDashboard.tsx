@@ -82,8 +82,8 @@ export default function AttendanceDashboard({ year = new Date().getFullYear(), m
     const monthName = new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' });
 
     return (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-2xl flex items-center justify-center z-[150] animate-in zoom-in-95 duration-300">
-            <div className="w-full max-w-lg bg-zen-surface border border-white/10 rounded-[32px] shadow-2xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[150] animate-fade-in">
+            <div className="w-full max-w-lg bg-zen-surface border border-white/10 rounded-[32px] shadow-xl overflow-hidden">
 
                 {/* Header */}
                 <div className="p-6 border-b border-white/10 bg-gradient-to-r from-white/5 to-transparent flex justify-between items-start">

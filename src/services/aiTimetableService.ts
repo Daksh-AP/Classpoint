@@ -5,6 +5,7 @@ import {
   normalizeSectionName,
   TimetableClassEntry,
 } from '../utils/timetableNormalizer';
+import { sanitizeTimetableOcrText } from './promptSanitizer';
 
 export interface ParseTimetableResult {
   success: boolean;
@@ -239,6 +240,12 @@ export class AITimetableService {
     textContent: string,
     currentTargetSection?: string
   ): Promise<ParseTimetableResult | null> {
+    const apiKey = GEMINI_API_KEY || (typeof window !== 'undefined' ? (window as any).__GENATIS_DYNAMIC_KEYS__?.GEMINI_KEY || '' : '');
+    if (!apiKey) {
+      // No client API key exposed; gracefully defer to Cloud Function
+      return null;
+    }
+
     const modelsToTry = [
       'gemini-3.5-flash',
       'gemini-3.6-flash',
@@ -270,7 +277,7 @@ export class AITimetableService {
       });
     } else if (textContent && textContent.trim()) {
       parts.push({
-        text: `\n\n--- TIMETABLE FILE CONTENT (${file.name}) ---\n${textContent}`,
+        text: `\n\n--- TIMETABLE FILE CONTENT (${file.name}) ---\n${sanitizeTimetableOcrText(textContent)}`,
       });
     } else if (base64) {
       parts.push({
@@ -283,7 +290,7 @@ export class AITimetableService {
 
     for (const model of modelsToTry) {
       try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

@@ -125,21 +125,20 @@ const ClassroomDock: React.FC<ClassroomDockProps> = ({
     <motion.div
       ref={dockRef}
       className="fixed bottom-6 left-1/2 z-[200] flex flex-col items-center select-none touch-manipulation pointer-events-none"
-      initial={{ y: 100, x: '-50%', opacity: 0 }}
+      initial={{ y: 80, x: '-50%', opacity: 0 }}
       animate={{ 
         y: isMinimized ? 65 : 0, 
         x: '-50%', 
-        opacity: isMinimized ? 0.35 : 1, 
-        scale: isMinimized ? 0.9 : 1 
+        opacity: isMinimized ? 0.35 : 1
       }}
-      exit={{ y: 100, x: '-50%', opacity: 0, scale: 0.95 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+      exit={{ y: 80, x: '-50%', opacity: 0 }}
+      transition={{ duration: 0.06, ease: 'easeOut' }}
     >
       {/* Touchscreen Peek Tab — Generous touch hit area */}
       {isMinimized && (
         <button 
           type="button"
-          className="mb-3 bg-white/95 dark:bg-black/90 backdrop-blur-xl rounded-full px-6 py-2.5 flex items-center gap-2.5 pointer-events-auto cursor-pointer border border-black/10 dark:border-white/15 shadow-2xl active:scale-95 transition-transform" 
+          className="mb-3 bg-white dark:bg-[#1A1A24] rounded-full px-6 py-2.5 flex items-center gap-2.5 pointer-events-auto cursor-pointer border border-black/10 dark:border-white/15 shadow-sm active:scale-95" 
           onClick={(e) => {
             e.stopPropagation();
             setIsExpanded(true);
@@ -156,9 +155,9 @@ const ClassroomDock: React.FC<ClassroomDockProps> = ({
 
       {/* Main Dock Container */}
       <div 
-        className={`bg-white/90 dark:bg-[#1A1A24]/95 backdrop-blur-2xl border border-white/60 dark:border-white/10 rounded-2xl p-3 flex items-center gap-3 shadow-2xl shadow-black/15 pointer-events-auto ${
+        className={`bg-white dark:bg-[#1A1A24] border border-black/10 dark:border-white/10 rounded-2xl p-3 flex items-center gap-3 shadow-sm pointer-events-auto ${
           isMinimized ? 'pointer-events-none opacity-0' : 'pointer-events-auto opacity-100'
-        } transition-opacity duration-200`}
+        } transition-opacity duration-75`}
       >
         
         {/* Progress / Status Section */}

@@ -28,12 +28,12 @@ const DetailedContextCard = ({ context, onClose }: any) => {
         <div className="fixed inset-0 z-[20000] flex items-center justify-center p-6 animate-fade-in">
             {/* Backdrop */}
             <div 
-                className="absolute inset-0 bg-black/60 backdrop-blur-md" 
+                className="absolute inset-0 bg-black/75" 
                 onClick={onClose}
             />
 
             {/* Card Content */}
-            <div className="relative w-full max-w-4xl max-h-[90vh] bg-[var(--surface)] border border-[var(--glass-border)] rounded-[32px] shadow-2xl flex flex-col overflow-hidden animate-scale-up backdrop-blur-2xl">
+            <div className="relative w-full max-w-4xl max-h-[90vh] bg-[var(--surface)] border border-[var(--glass-border)] rounded-[32px] shadow-xl flex flex-col overflow-hidden animate-fade-in">
                 
                 {/* Header Section */}
                 <div className="p-8 pb-6 border-b border-[var(--glass-border)] flex justify-between items-start bg-[var(--surface)]">

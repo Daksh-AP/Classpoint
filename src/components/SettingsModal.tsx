@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { X, Save, RotateCcw, LogOut, GraduationCap, Monitor, Search, Settings, Power, Trash2, Edit2, Check, Lock } from 'lucide-react';
+import { X, Save, RotateCcw, LogOut, GraduationCap, Monitor, Search, Settings, Power, Trash2, Edit2, Check, Lock, RefreshCw, Sparkles, Info, Zap } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, getDocs, query, where, orderBy, doc, setDoc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
@@ -9,6 +9,7 @@ import { paths } from '../lib/firebase/paths';
 import { AnimatedSelect } from './AnimatedSelect';
 import { useSchoolId } from '../hooks/useSchoolId';
 import { resolveAccountSection } from '../utils/sectionUtils';
+import { UpdateService, UpdateInfo } from '../services/UpdateService';
 
 const SettingsModal = ({
   isOpen,
@@ -33,6 +34,20 @@ const SettingsModal = ({
   const [themeSetting, setThemeSetting] = useState(currentSettings?.theme || 'system');
   const [startOnLoginSetting, setStartOnLoginSetting] = useState(currentSettings?.startOnLogin || false);
   const modalRef = useRef<HTMLDivElement>(null);
+
+  // Performance / Low-Latency Mode
+  const [isLowLatency, setIsLowLatency] = useState(() => {
+    return localStorage.getItem('genatis_low_latency_mode') !== 'false';
+  });
+
+  // OTA Updates State
+  const [appVersion, setAppVersion] = useState('1.0.0');
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState<string | null>(null);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [downloadingUpdate, setDownloadingUpdate] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [updateDownloaded, setUpdateDownloaded] = useState(false);
 
   const [smartboardName, setSmartboardName] = useState('');
   const [smartboardLocation, setSmartboardLocation] = useState('');
@@ -74,8 +89,95 @@ const SettingsModal = ({
       setStartOnLoginSetting(currentSettings?.startOnLogin || false);
       if (currentUser?.uid) fetchRegisteredSmartboards(currentUser.uid);
       setConnectingSmartboardId(connectedSmartboardId || '');
+
+      // OTA version and listeners
+      UpdateService.getAppVersion().then(v => setAppVersion(v));
+
+      const unsubAvail = UpdateService.onUpdateAvailable((info: UpdateInfo) => {
+        setUpdateAvailable(true);
+        setCheckingUpdate(false);
+        setUpdateStatus(`Version ${info.version || ''} available`);
+        toast.success(`Update available: v${info.version || ''}`);
+      });
+
+      const unsubNotAvail = UpdateService.onUpdateNotAvailable(() => {
+        setCheckingUpdate(false);
+        setUpdateAvailable(false);
+        setUpdateStatus('App is up to date.');
+      });
+
+      const unsubProgress = UpdateService.onDownloadProgress((prog) => {
+        setDownloadingUpdate(true);
+        setDownloadProgress(Math.round(prog.percent || 0));
+      });
+
+      const unsubDownloaded = UpdateService.onUpdateDownloaded((info: UpdateInfo) => {
+        setDownloadingUpdate(false);
+        setUpdateDownloaded(true);
+        setUpdateStatus(`Version ${info.version || ''} downloaded. Ready to apply!`);
+        toast.success('Update downloaded. Click to restart and apply.');
+      });
+
+      const unsubError = UpdateService.onUpdateError((err) => {
+        setCheckingUpdate(false);
+        setDownloadingUpdate(false);
+        setUpdateStatus(err.message || 'Update check failed');
+      });
+
+      return () => {
+        unsubAvail?.();
+        unsubNotAvail?.();
+        unsubProgress?.();
+        unsubDownloaded?.();
+        unsubError?.();
+      };
     }
   }, [isOpen, selectedSection, currentUser, connectedSmartboardId, currentSettings]);
+
+  const toggleLowLatencyMode = () => {
+    const nextVal = !isLowLatency;
+    setIsLowLatency(nextVal);
+    localStorage.setItem('genatis_low_latency_mode', String(nextVal));
+    if (nextVal) {
+      document.documentElement.classList.add('board-performance-mode');
+      toast.success('Smartboard Low-Latency Mode enabled');
+    } else {
+      document.documentElement.classList.remove('board-performance-mode');
+      toast.success('Standard visual effects enabled');
+    }
+  };
+
+  const handleCheckUpdates = async () => {
+    setCheckingUpdate(true);
+    setUpdateStatus('Connecting to update server...');
+    const res = await UpdateService.checkForUpdates();
+    setCheckingUpdate(false);
+    if (res?.isDev) {
+      setUpdateStatus('Running in Development Mode (v' + (res.currentVersion || '1.0.0') + ')');
+    } else if (res?.status === 'error') {
+      setUpdateStatus('Update server unreachable: ' + (res.error || 'Network error'));
+    } else if (res?.updateInfo?.version) {
+      setUpdateAvailable(true);
+      setUpdateStatus(`Update available: v${res.updateInfo.version}`);
+    } else {
+      setUpdateStatus('Genatis Board is up to date (v' + (res?.currentVersion || appVersion) + ')');
+    }
+  };
+
+  const handleDownloadUpdate = async () => {
+    setDownloadingUpdate(true);
+    setDownloadProgress(0);
+    setUpdateStatus('Downloading update in background...');
+    const ok = await UpdateService.downloadUpdate();
+    if (!ok) {
+      setDownloadingUpdate(false);
+      setUpdateStatus('Failed to start download');
+    }
+  };
+
+  const handleInstallUpdate = () => {
+    UpdateService.installUpdate();
+  };
 
   const fetchRegisteredSmartboards = async (uid: any) => {
     try {
@@ -281,6 +383,146 @@ const SettingsModal = ({
               >
                 <div className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 shadow-sm ${startOnLoginSetting ? 'translate-x-6' : 'translate-x-0'}`} />
               </button>
+            </div>
+
+            {/* Smartboard Low-Latency / Touch Performance Mode */}
+            <div
+              className="flex items-center justify-between p-5 rounded-2xl shadow-sm transition-all"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+            >
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="font-semibold text-body" style={{ color: 'var(--text-primary)' }}>Smartboard Low-Latency Mode</h4>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-500">Recommended for 4K</span>
+                </div>
+                <p className="text-small mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+                  Reduces animation delays and disables heavy GPU blur passes for instant touch feedback on interactive boards.
+                </p>
+              </div>
+              <button
+                onClick={toggleLowLatencyMode}
+                className={`relative w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none ${isLowLatency ? 'bg-green-500' : 'bg-gray-400/30'}`}
+                aria-label="Toggle Smartboard Low-Latency Mode"
+              >
+                <div className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 shadow-sm ${isLowLatency ? 'translate-x-6' : 'translate-x-0'}`} />
+              </button>
+            </div>
+
+            {/* 1080p Display Resolution Optimizer */}
+            <div
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 rounded-2xl shadow-sm transition-all"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+            >
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="font-semibold text-body" style={{ color: 'var(--text-primary)' }}>Display Resolution Optimizer</h4>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/15 text-blue-500">Target: 1920x1080</span>
+                </div>
+                <p className="text-small mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+                  Running Windows at 1080p cuts GPU rendering load by 75% compared to 4K, giving silky-smooth touch drawing and zero panel lag.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  if (window.electronAPI) {
+                    window.electronAPI.invoke('open-display-settings');
+                  } else {
+                    toast.error('Available in desktop app mode');
+                  }
+                }}
+                className="zen-btn px-4 py-2 text-xs font-semibold rounded-full border border-[var(--border)] hover:bg-[var(--surface-hover)] active:scale-95 transition-all shrink-0 flex items-center gap-1.5"
+              >
+                <Monitor className="w-3.5 h-3.5 text-[var(--accent)]" />
+                Change to 1080p in Windows
+              </button>
+            </div>
+          </div>
+
+          {/* Over-The-Air (OTA) Updates & App Version */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+            <h3 className="text-h3 font-semibold flex items-center gap-2.5" style={{ color: 'var(--text-primary)' }}>
+              <span className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
+                <RefreshCw className="w-4 h-4" strokeWidth={2} />
+              </span>
+              <span>Updates & System Version</span>
+            </h3>
+
+            <div
+              className="p-5 rounded-2xl shadow-sm space-y-4"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-semibold text-body" style={{ color: 'var(--text-primary)' }}>Genatis Board</h4>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-mono font-semibold bg-[var(--accent-soft)] text-[var(--accent)]">
+                      v{appVersion}
+                    </span>
+                  </div>
+                  <p className="text-small mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+                    Over-The-Air updates allow smartboards to receive latest features and performance patches automatically.
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleCheckUpdates}
+                  disabled={checkingUpdate || downloadingUpdate}
+                  className="zen-btn px-4 py-2 text-xs font-semibold rounded-full border border-[var(--border)] hover:bg-[var(--surface-hover)] active:scale-95 transition-all disabled:opacity-50 flex items-center gap-1.5 shrink-0"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${checkingUpdate ? 'animate-spin' : ''}`} />
+                  {checkingUpdate ? 'Checking...' : 'Check for Updates'}
+                </button>
+              </div>
+
+              {/* Status Message / Actions */}
+              {updateStatus && (
+                <div className="p-3.5 rounded-xl bg-black/5 dark:bg-white/5 border border-[var(--border)] text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    {updateDownloaded ? (
+                      <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                    ) : updateAvailable ? (
+                      <Sparkles className="w-4 h-4 text-[var(--accent)] shrink-0" />
+                    ) : (
+                      <Info className="w-4 h-4 text-[var(--text-secondary)] shrink-0" />
+                    )}
+                    <span className="font-medium text-[var(--text-primary)]">{updateStatus}</span>
+                  </div>
+
+                  {updateAvailable && !updateDownloaded && !downloadingUpdate && (
+                    <button
+                      onClick={handleDownloadUpdate}
+                      className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[var(--accent)] text-white shadow-sm hover:opacity-90 active:scale-95 transition-all"
+                    >
+                      Download Update
+                    </button>
+                  )}
+
+                  {downloadingUpdate && (
+                    <div className="w-full sm:w-48 flex flex-col gap-1">
+                      <div className="flex justify-between text-[10px] text-[var(--text-secondary)]">
+                        <span>Downloading patch</span>
+                        <span>{downloadProgress}%</span>
+                      </div>
+                      <div className="h-1.5 w-full bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-[var(--accent)] transition-all duration-200"
+                          style={{ width: `${downloadProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {updateDownloaded && (
+                    <button
+                      onClick={handleInstallUpdate}
+                      className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white shadow-sm hover:opacity-90 active:scale-95 transition-all flex items-center gap-1"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      Restart & Apply Update
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

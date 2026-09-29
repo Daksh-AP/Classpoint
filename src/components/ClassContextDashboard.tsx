@@ -362,7 +362,7 @@ const ClassContextDashboard = ({ selectedSection }: any) => {
             {showPinPrompt && createPortal(
                 <div className="fixed inset-0 z-[30000] flex items-center justify-center p-4 animate-fade-in">
                     <div 
-                        className="absolute inset-0 bg-black/60 backdrop-blur-md" 
+                        className="absolute inset-0 bg-black/75" 
                         onClick={() => {
                             setShowPinPrompt(null);
                             setPinInput('');
@@ -370,7 +370,7 @@ const ClassContextDashboard = ({ selectedSection }: any) => {
                         }}
                     />
                     
-                    <div className="relative w-full max-w-sm bg-[var(--surface)] border border-[var(--glass-border)] rounded-[32px] shadow-2xl p-8 animate-scale-up">
+                    <div className="relative w-full max-w-sm bg-[var(--surface)] border border-[var(--glass-border)] rounded-[32px] shadow-xl p-8 animate-fade-in">
                         <div className="text-center mb-8">
                             <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
                                 <Activity className="w-8 h-8" />

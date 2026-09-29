@@ -16,6 +16,20 @@ const os = require('os');
 const { execSync } = require('child_process');
 console.log('[MAIN] electron.cjs loaded');
 
+// Initialize electron-updater for Over-The-Air (OTA) updates
+let autoUpdater = null;
+try {
+  const updaterPkg = require('electron-updater');
+  autoUpdater = updaterPkg.autoUpdater;
+  if (autoUpdater) {
+    autoUpdater.autoDownload = false;
+    autoUpdater.autoInstallOnAppQuit = true;
+    console.log('[OTA] autoUpdater initialized');
+  }
+} catch (e) {
+  console.warn('[MAIN] electron-updater module not loaded:', e.message);
+}
+
 // Completely disable and remove default Electron application menu (File, Edit, View, Window, Help)
 // Ensures no developer toolbar or Electron menu bar is visible on any window
 Menu.setApplicationMenu(null);
@@ -100,12 +114,21 @@ try {
 app.commandLine.appendSwitch('plugins');
 app.commandLine.appendSwitch('enable-pdf-viewer-index', '1');
 
-// 4K High-DPI & GPU Rendering on OPS modules:
-// Enable per-monitor DPI support naturally without forcing scale factor 1.0 (which caused touch coordinate drift)
-app.commandLine.appendSwitch('high-dpi-support', '1');
+// Smartboard GPU Rendering Optimization on OPS modules:
+// Force Direct3D 11 hardware rasterization and eliminate touch/GPU latency
+app.commandLine.appendSwitch('use-angle', 'd3d11');
 app.commandLine.appendSwitch('enable-gpu-rasterization');
+app.commandLine.appendSwitch('enable-oop-rasterization');
 app.commandLine.appendSwitch('enable-zero-copy');
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
+app.commandLine.appendSwitch('enable-accelerated-2d-canvas');
+app.commandLine.appendSwitch('canvas-msaa-sample-count', '0');
+app.commandLine.appendSwitch('disable-smooth-scrolling');
+app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion,VaapiVideoDecoder');
+app.commandLine.appendSwitch('enable-features', 'CanvasOopRasterization');
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
 
 const isDev = process.env.NODE_ENV === 'development' || process.defaultApp || /[\\/]electron-prebuilt[\\/]/.test(process.execPath) || /[\\/]electron[\\/]/.test(process.execPath);
 
@@ -146,6 +169,7 @@ function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 1920,
     height: 1080,
+    backgroundColor: '#121212',
     autoHideMenuBar: true,
     icon: iconPath,
     webPreferences: {
@@ -155,7 +179,8 @@ function createMainWindow() {
       preload: preloadPath,
       webSecurity: !isDev,
       webviewTag: true,
-      devTools: isDev // Completely disabled in production
+      devTools: isDev, // Completely disabled in production
+      backgroundThrottling: false
     },
     show: false,
   });
@@ -169,10 +194,19 @@ function createMainWindow() {
   // Disable the default menu bar completely (removes developer toolbar)
   mainWindow.setMenuBarVisibility(false);
   mainWindow.removeMenu();
-  mainWindow.setAutoHideMenuBar(true);
-
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
+    // Non-blocking OTA update check 15s after startup (avoids morning network congestion on 80 boards)
+    if (!isDev && autoUpdater) {
+      setTimeout(() => {
+        try {
+          console.log('[OTA] Running background update check...');
+          autoUpdater.checkForUpdates().catch(err => console.log('[OTA] Startup check info:', err.message));
+        } catch (err) {
+          console.warn('[OTA] Startup check error:', err);
+        }
+      }, 15000);
+    }
   });
 
   // Block Developer Tools and accidental reloads in production
@@ -244,9 +278,8 @@ function createOverlayWindow() {
 
   overlayWindow.setMenuBarVisibility(false);
   overlayWindow.removeMenu();
-  overlayWindow.setAutoHideMenuBar(true);
-
-  overlayWindow.setIgnoreMouseEvents(false);
+  // Default to pass-through on transparent bounds so native whiteboard pen touches are never swallowed
+  overlayWindow.setIgnoreMouseEvents(true, { forward: true });
   const overlayUrl = isDev
     ? 'http://localhost:3000/#/overlay'
     : `file://${resolveIndexPath()}#/overlay`;
@@ -414,6 +447,117 @@ ipcMain.handle('open-path', async (event, filePath) => {
     return { success: true };
   } catch (error) {
     return { success: false, error: error.message };
+  }
+});
+
+// --- Over-The-Air (OTA) Updates & Versioning Handlers ---
+if (autoUpdater) {
+  autoUpdater.on('update-available', (info) => {
+    console.log('[OTA] Update available:', info?.version);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('update-available', info);
+    }
+  });
+
+  autoUpdater.on('update-not-available', (info) => {
+    console.log('[OTA] App is up to date.');
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('update-not-available', info);
+    }
+  });
+
+  autoUpdater.on('download-progress', (progressObj) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('download-progress', progressObj);
+    }
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    console.log('[OTA] Update downloaded and ready to install:', info?.version);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('update-downloaded', info);
+    }
+  });
+
+  const formatOtaError = (msg) => {
+    if (!msg) return 'Update check failed';
+    if (msg.includes('Unable to find latest version on GitHub') || msg.includes('406') || msg.includes('Cannot parse releases feed')) {
+      return 'No published release found on GitHub (Daksh-AP/Classpoint). Publish a release with latest.yml to enable OTA updates.';
+    }
+    return msg;
+  };
+
+  autoUpdater.on('error', (err) => {
+    const formatted = formatOtaError(err?.message);
+    console.warn('[OTA] Update check notification:', formatted);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('update-error', { message: formatted });
+    }
+  });
+}
+
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion();
+});
+
+ipcMain.handle('check-for-updates', async () => {
+  if (isDev || !autoUpdater) {
+    return {
+      isDev: true,
+      currentVersion: app.getVersion(),
+      status: 'dev-mode'
+    };
+  }
+  try {
+    const result = await autoUpdater.checkForUpdates();
+    return {
+      currentVersion: app.getVersion(),
+      updateInfo: result?.updateInfo || null,
+      status: 'success'
+    };
+  } catch (err) {
+    const friendlyMsg = err?.message && (err.message.includes('Unable to find latest version') || err.message.includes('406') || err.message.includes('Cannot parse releases feed'))
+      ? 'No published release found on GitHub (Daksh-AP/Classpoint). Publish a release with latest.yml to enable OTA updates.'
+      : err.message;
+    console.warn('[OTA] checkForUpdates info:', friendlyMsg);
+    return {
+      currentVersion: app.getVersion(),
+      error: friendlyMsg,
+      status: 'error'
+    };
+  }
+});
+
+ipcMain.handle('download-update', async () => {
+  if (isDev || !autoUpdater) return false;
+  try {
+    await autoUpdater.downloadUpdate();
+    return true;
+  } catch (err) {
+    console.warn('[OTA] downloadUpdate failed:', err.message);
+    return false;
+  }
+});
+
+ipcMain.handle('install-update', () => {
+  if (!autoUpdater) return false;
+  try {
+    console.log('[OTA] Quitting and installing update...');
+    autoUpdater.quitAndInstall(false, true);
+    return true;
+  } catch (err) {
+    console.error('[OTA] quitAndInstall failed:', err);
+    return false;
+  }
+});
+
+ipcMain.handle('open-display-settings', async () => {
+  const { shell } = require('electron');
+  try {
+    await shell.openExternal('ms-settings:display');
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
   }
 });
 

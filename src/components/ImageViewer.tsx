@@ -259,7 +259,7 @@ const ImageViewer = ({ imageUrl, onClose, onSave }: any) => {
     return (
         <div className="fixed inset-0 z-[100] flex flex-col">
             {/* Toolbar */}
-            <div className="flex items-center justify-between p-4 bg-black/50 backdrop-blur-xl border-b border-white/10 shrink-0 z-50">
+            <div className="flex items-center justify-between p-4 bg-zinc-900 border-b border-white/10 shrink-0 z-50">
                 <div className="flex items-center space-x-4">
                     <div className="flex items-center bg-white/10 rounded-lg p-1">
                         <button onClick={undo} className="p-2 text-gray-400 hover:text-white" title="Undo">
