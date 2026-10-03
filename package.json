@@ -1,6 +1,6 @@
 {
     "name": "genatis-board",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Genatis Board — Smartboard app for classroom instruction and attendance",
     "author": "Genatis",
     "private": true,
